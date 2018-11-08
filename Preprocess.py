@@ -6,7 +6,6 @@ import pprint
 from bs4 import BeautifulSoup
 import json
 
-
 pp = pprint.PrettyPrinter(indent=4)
 
 
@@ -20,15 +19,15 @@ class PreprocessManager():
         '''
         Overall Iterator for whole dataset
         '''
-        fnames = self.fname_search() #list of tuple (sgm file, apf.xml file)
+        fnames = self.fname_search()  # list of tuple (sgm file, apf.xml file)
         instances, words, pos_tags, marks, label_event, label_role = [[] for i in range(6)]
         total_res = []
         for fname in fnames:
-            res = self.process_one_file(fname) # Do something....
+            res = self.process_one_file(fname)  # Do something....
             total_res += res
         json_result = self.Data2Json(total_res)
-        with open('./data/dump.txt','wb') as f:
-            pickle.dump(json_result,f)
+        with open('./data/dump.txt', 'wb') as f:
+            pickle.dump(json_result, f)
 
     def fname_search(self):
         '''
@@ -36,12 +35,14 @@ class PreprocessManager():
         '''
         fname_list = list()
         for dir in self.dir_list:
+            # To exclude hidden files
+            if len(dir) and dir[0] == '.': continue
             full_path = self.dir_path.format(dir)
             flist = os.listdir(full_path)
             for fname in flist:
                 if '.sgm' not in fname: continue
                 raw = fname.split('.sgm')[0]
-                fname_list.append((self.dir_path.format(dir)+raw+'.sgm',self.dir_path.format(dir)+raw+'.apf.xml'))
+                fname_list.append((self.dir_path.format(dir) + raw + '.sgm', self.dir_path.format(dir) + raw + '.apf.xml'))
         return fname_list
 
     def process_one_file(self, fname):
@@ -52,11 +53,10 @@ class PreprocessManager():
         self.parse_one_sgm(fname[0])
 
     def parse_one_xml(self, fname):
-        print(fname)
         tree = ET.parse(fname)
         root = tree.getroot()
 
-        entities, events = [],[]
+        entities, events = [], []
 
         for child in root[0]:
             if child.tag == 'entity':
@@ -73,9 +73,9 @@ class PreprocessManager():
         for sub in item:
             if sub.tag != 'entity_mention': continue
             mention = sub.attrib
-            for el in sub: #charseq and head
+            for el in sub:  # charseq and head
                 mention[el.tag] = dict()
-                mention[el.tag]['position'] = [el[0].attrib['START'],el[0].attrib['END']]
+                mention[el.tag]['position'] = [el[0].attrib['START'], el[0].attrib['END']]
                 mention[el.tag]['text'] = el[0].text
             entity['mention'].append(mention)
         return entity
@@ -95,22 +95,21 @@ class PreprocessManager():
                 mention = sub.attrib  # init dict with mention ID
                 mention['argument'] = []
                 for el in sub:
-                    if el.tag=='event_mention_argument':
+                    if el.tag == 'event_mention_argument':
                         one_arg = el.attrib
-                        one_arg['position'] = [el[0][0].attrib['START'],el[0][0].attrib['END']]
+                        one_arg['position'] = [el[0][0].attrib['START'], el[0][0].attrib['END']]
                         one_arg['text'] = el[0][0].text
                         mention['argument'].append(one_arg)
 
-                    else: # [extent, ldc_scope, anchor] case
+                    else:  # [extent, ldc_scope, anchor] case
                         for seq in el:
                             mention[el.tag] = dict()
-                            mention[el.tag]['position'] = [seq.attrib['START'],seq.attrib['END']]
+                            mention[el.tag]['position'] = [seq.attrib['START'], seq.attrib['END']]
                             mention[el.tag]['text'] = seq.text
 
         return event
 
-    def parse_one_sgm(self, fname):
-        pass
+
 
     def Data2Json(self, data):
         pass
@@ -124,5 +123,6 @@ class PreprocessManager():
 
 if __name__ == '__main__':
     man = PreprocessManager()
-    man.preprocess()
+    # man.preprocess()
 
+    man.parse_one_sgm('./data/ace_2005_td_v7/data/English/bc/adj/CNN_CF_20030303.1900.00.sgm')
