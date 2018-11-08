@@ -52,11 +52,11 @@ class PreprocessManager():
         entities_in_sent = list()
         check = dict()
         for entity in entities:
-            for mension in entity['mention']:
-                if sent_pos[0] < int(mension['head']['position'][0]) and int(mension['head']['position'][1]) < sent_pos[1]:
-                    if mension['head']['position'][0] in check: continue
-                    check[mension['head']['position'][0]] = 1
-                    entities_in_sent.append(mension)
+            for mention in entity['mention']:
+                if sent_pos[0] < int(mention['head']['position'][0]) and int(mention['head']['position'][1]) < sent_pos[1]:
+                    if mention['head']['position'][0] in check: continue
+                    check[mention['head']['position'][0]] = 1
+                    entities_in_sent.append(mention)
 
         return entities_in_sent
 
