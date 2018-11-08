@@ -12,10 +12,14 @@ class PreprocessManager():
         '''
         Overall Iterator for whole dataset
         '''
+        fnames = self.fname_search()
         pass
 
     def fname_search(self):
-        pass
+
+        for dir in self.dir_path:
+            full_path = self.dir_list.format(dir)
+            print(full_path)
 
     def process_one_doc(self, path, docname):
         pass
@@ -38,5 +42,5 @@ class PreprocessManager():
 
 if __name__ == '__main__':
     man = PreprocessManager()
-    man.p
+    man.preprocess()
 
