@@ -76,7 +76,7 @@ class PreprocessManager():
         # args fname = (sgm fname(full path), xml fname(full path))
         # return some multiple [ sentence, entities, event mention(trigger + argument's information]
         xml_ent_res, xml_event_res = self.parse_one_xml(fname[1])
-        # sgm_ent_res, sgm_event_res = self.parse_one_sgm(fname[0])
+        sgm_ent_res, sgm_event_res = self.parse_one_sgm(fname[0])
         # TODO : merge xml and sgm file together
         return xml_ent_res, xml_event_res
 
