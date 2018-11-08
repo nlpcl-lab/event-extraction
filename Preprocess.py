@@ -14,6 +14,9 @@ class PreprocessManager():
         '''
         pass
 
+    def fname_search(self):
+        pass
+
     def process_one_doc(self, path, docname):
         pass
 
