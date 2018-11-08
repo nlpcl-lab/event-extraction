@@ -41,6 +41,8 @@ class PreprocessManager():
         '''
         fname_list = list()
         for dir in self.dir_list:
+            # To exclude hidden files
+            if len(dir) and dir[0] == '.': continue
             full_path = self.dir_path.format(dir)
             flist = os.listdir(full_path)
             for fname in flist:
