@@ -109,7 +109,48 @@ class PreprocessManager():
 
         return event
 
+    def parse_one_sgm(self, fname):
+        print('fname :', fname)
+        with open(fname, 'r') as f:
+            data = f.read()
+            soup = BeautifulSoup(data, features='html.parser')
 
+            doc = soup.find('doc')
+            doc_id = doc.docid.text
+            doc_type = doc.doctype.text.strip()
+            date_time = doc.datetime.text
+            headline = doc.headline.text
+
+            body = []
+
+            if doc_type == 'WEB TEXT':
+                posts = soup.findAll('post')
+                for post in posts:
+                    poster = post.poster.text
+                    post.poster.extract()
+                    post_date = post.postdate.text
+                    post.postdate.extract()
+                    subject = post.subject.text
+                    post.subject.extract()
+                    text = post.text
+                    body.append({
+                        'poster': poster,
+                        'post_date': post_date,
+                        'subject': subject,
+                        'text': text,
+                    })
+            elif doc_type == 'STORY':
+                turns = soup.findAll('turn')
+                for turn in turns:
+                    speaker = turn.speaker.text
+                    turn.speaker.extract()
+                    text = turn.text
+                    body.append({
+                        'speaker': speaker,
+                        'text': text,
+                    })
+            else:
+                print('another type! :', doc_type)
 
     def Data2Json(self, data):
         pass
