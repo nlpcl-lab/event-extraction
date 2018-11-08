@@ -45,8 +45,7 @@ class Model():
         self.dropout_keep_prob = dropout_keep_prob
         with tf.device('/cpu:0'), tf.name_scope("word_embedding_layer"):
             # [vocab_size, embedding_size]
-            W = tf.Variable(tf.random_normal(shape=[vocab_size, word_embedding_size], mean=0.0, stddev=0.5),
-                            name="word_table")
+            W = tf.Variable(tf.random_normal(shape=[vocab_size, word_embedding_size], mean=0.0, stddev=0.5), name="word_table")
 
             input_word_vec = tf.nn.embedding_lookup(W, input_x)
             input_t_pos_t = input_t_pos + (sentence_length - 1)
@@ -100,10 +99,10 @@ class Model():
         lexical_vec = tf.reshape(input_word_vec, shape=(-1, sentence_length * word_embedding_size))
         # Combine lexical level features and sentence level features
         # [batch_size, num_filters_total] + [batch_size, sentence_length*word_embedding_size]
-        all_input_fatures = tf.concat(1, [lexical_vec, h_pool_flat])
+        all_input_features = tf.concat(1, [lexical_vec, h_pool_flat])
         # The overall classifier goes through a layer of dropout and then into softmax
         with tf.device('/cpu:0'), tf.name_scope('dropout'):
-            all_fatures = tf.nn.dropout(all_input_fatures, dropout_keep_prob)
+            all_fatures = tf.nn.dropout(all_input_features, dropout_keep_prob)
         # print all_fatures
         # Classifier
         with tf.device('/cpu:0'), tf.name_scope('softmax'):
@@ -181,7 +180,7 @@ with tf.Graph().as_default():
         sess.run(tf.initialize_all_variables())
 
 
-        def train_step(input_x,input_y,input_t,input_c,input_t_pos,input_c_pos,dropout_keep_prob,sentence_features,input_t_context,input_c_context):
+        def train_step(input_x, input_y, input_t, input_c, input_t_pos, input_c_pos, dropout_keep_prob, sentence_features, input_t_context, input_c_context):
             feed_dict = {
                 model.input_x: input_x,
                 model.input_y: input_y,
