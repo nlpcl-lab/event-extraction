@@ -89,7 +89,7 @@ class Model():
                     padding='VALID',
                     name="pool")
                 pooled_outputs.append(pooled)
-        # 使用到的所有滤波器数目(输出的通道数目)
+
         num_filters_total = filter_num * len(filter_sizes)
         # The number of all filters used (number of channels output)
         h_pool = tf.concat(3, pooled_outputs)
@@ -133,7 +133,7 @@ import datetime
 import os
 
 file = 'datas_ace.txt'
-store_path = "ace_data_2016_12_02"
+store_path = "ace_data.txt"
 data_batch_size = 20
 max_sequence_length = 20
 windows = 3  # The size of the selected context window
@@ -171,7 +171,7 @@ with tf.Graph().as_default():
         train_op = optimizer.apply_gradients(grads_and_vars)
 
         timestamp = str(int(time.time()))
-        out_dir = os.path.abspath(os.path.join(os.path.curdir, "ace_cnn_model_02", timestamp))
+        out_dir = os.path.abspath(os.path.join(os.path.curdir, "model_01", timestamp))
         print("Writing to {}\n".format(out_dir))
         checkpoint_dir = os.path.abspath(os.path.join(out_dir, "checkpoints"))
         checkpoint_prefix = os.path.join(checkpoint_dir, "model")
@@ -220,7 +220,7 @@ with tf.Graph().as_default():
             return predicts
 
 
-        # sentences_fatures, c_context, t_context, pos_tag
+        # sentences_features, c_context, t_context, pos_tag
         for i in range(num_epochs):
             for j in range(datas.instances_size // data_batch_size):
                 x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = datas.next_cnn_data()
