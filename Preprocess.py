@@ -48,28 +48,28 @@ class PreprocessManager():
         # args fname = (sgm fname(full path), xml fname(full path))
         # return some multiple [ sentence, entities, event mention(trigger + argument's information]
         # Do something....
-        self.parse_one_xml(fname[1])
-        self.parse_one_sgm(fname[0])
+        xml_ent_res, xml_event_res = self.parse_one_xml(fname[1])
+        sgm_ent_res, sgm_event_res = self.parse_one_sgm(fname[0])
+        # TODO : merge xml and sgm file together
+        return xml_event_res
 
     def parse_one_xml(self, fname):
         print(fname)
         tree = ET.parse(fname)
         root = tree.getroot()
-
         entities, events = [],[]
 
         for child in root[0]:
             if child.tag == 'entity':
                 entities.append(self.xml_entity_parse(child))
-
             if child.tag == 'event':
                 events.append(self.xml_event_parse(child))
+        return entities, events
 
     def xml_entity_parse(self, item):
         entity = item.attrib
         entity['mention'] = []
         entity['attribute'] = []  # What is this exactly?
-
         for sub in item:
             if sub.tag != 'entity_mention': continue
             mention = sub.attrib
@@ -85,7 +85,6 @@ class PreprocessManager():
         event = item.attrib
         event['argument'] = []
         event['event_mention'] = []
-
         for sub in item:
             if sub.tag == 'event_argument':
                 tmp = sub.attrib
@@ -100,13 +99,11 @@ class PreprocessManager():
                         one_arg['position'] = [el[0][0].attrib['START'],el[0][0].attrib['END']]
                         one_arg['text'] = el[0][0].text
                         mention['argument'].append(one_arg)
-
                     else: # [extent, ldc_scope, anchor] case
                         for seq in el:
                             mention[el.tag] = dict()
                             mention[el.tag]['position'] = [seq.attrib['START'],seq.attrib['END']]
                             mention[el.tag]['text'] = seq.text
-
         return event
 
     def parse_one_sgm(self, fname):
