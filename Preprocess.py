@@ -12,14 +12,18 @@ class PreprocessManager():
         '''
         Overall Iterator for whole dataset
         '''
-        fnames = self.fname_search()
+        fnames = self.fname_search() #list of tuple (sgm file, apf.xml file)
         pass
 
     def fname_search(self):
+        fname_list = []
 
-        for dir in self.dir_path:
-            full_path = self.dir_list.format(dir)
-            print(full_path)
+        for dir in self.dir_list:
+            full_path = self.dir_path.format(dir)
+            flist = os.listdir(full_path)
+            print(flist)
+
+
 
     def process_one_doc(self, path, docname):
         pass
