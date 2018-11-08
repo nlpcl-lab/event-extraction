@@ -84,12 +84,26 @@ class PreprocessManager():
         #  event: one event item
         event = item.attrib
         event['argument'] = []
+        event['event_mention'] = []
 
         for sub in item:
+            print(sub.tag, sub.attrib)
             if sub.tag == 'event_argument':
-                event['argument'].append(sub.atrrib)
+                tmp = sub.attrib
+                event['argument'].append(tmp)
                 continue
             if sub.tag == 'event_mention':
+                mention = sub.attrib  # init dict with mention ID
+                mention['argument'] = []
+                for el in sub:
+                    if el.tag=='event_mention_argument':
+                        mention
+
+                    else: # [extent, ldc_scope, anchor] case
+                        for seq in el:
+                            mention[el.tag] = dict()
+                            mention[el.tag]['position'] = [seq.attrib['START'],seq.attrib['END']]
+                            mention[el.tag]['text'] = seq.text
 
         return event
 
