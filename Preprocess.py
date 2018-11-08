@@ -42,13 +42,13 @@ class PreprocessManager():
 
         for event in events:
             for e_mention in event['event_mention']:
-                item = {'TYPE': event['TYPE'], 'SUBTYPE': event['SUBTYPE']}
-                item['raw_sent'] = e_mention['ldc_scope']['text']
+                tmp = {'TYPE': event['TYPE'], 'SUBTYPE': event['SUBTYPE']}
+                tmp['raw_sent'] = e_mention['ldc_scope']['text']
                 sent_pos = [int(i) for i in e_mention['ldc_scope']['position']]
                 entities_in_sent = self.search_entity_in_sentence(entities, sent_pos)
                 val_timexs_in_sent = self.search_valtimex_in_sentence(val_timexs, sent_pos)
-                final_data = self.packing_sentence(e_mention, sent_pos, entities_in_sent, val_timexs_in_sent)
-                print('raw_sent :   {}'.format(item['raw_sent']))
+                final_data = self.packing_sentence(e_mention, tmp, sent_pos, entities_in_sent, val_timexs_in_sent)
+                print('raw_sent :   {}'.format(tmp['raw_sent']))
                 print(e_mention['anchor'])
                 print(sent_pos)
                 for e in entities_in_sent:
@@ -56,23 +56,30 @@ class PreprocessManager():
                 print(val_timexs_in_sent)
                 input()
 
-    def packing_sentence(self, e_mention, sent_pos, entities, valtimexes):
-
-
-
+    def packing_sentence(self, e_mention, tmp, sent_pos, entities, valtimexes):
+        # TODO : argument가 extent니깐, entity ID 가지고 entity head 가져온 다음에 그 head만 argument로 마크하기 
+        
+        packed_data = {
+            'sentence': [],
+            'label_position':[],  # label position ('T' for trigger, 'A' for argument, '*' for None of them
+            'EVENT_TYPE' : tmp['TYPE'],
+            'EVENT_SUBTYPE' : tmp['SUBTYPE'],
+            'entity_position' : []
+        }
 
 
     @staticmethod
     def search_entity_in_sentence(entities, sent_pos):
+        headVSextent = 'head' #'extent'
         entities_in_sent = list()
         check = dict()
         for entity in entities:
             for mention in entity['mention']:
-                if sent_pos[0] <= int(mention['head']['position'][0]) and int(mention['head']['position'][1]) <= sent_pos[1]:
-                    if mention['head']['position'][0] in check:  # duplicate entity in one word.
+                if sent_pos[0] <= int(mention[headVSextent]['position'][0]) and int(mention[headVSextent]['position'][1]) <= sent_pos[1]:
+                    if mention[headVSextent]['position'][0] in check:  # duplicate entity in one word.
                         print('으악!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
                         raise ValueError
-                    check[mention['head']['position'][0]] = 1
+                    check[mention[headVSextent]['position'][0]] = 1
                     entities_in_sent.append(mention)
         return entities_in_sent
 
