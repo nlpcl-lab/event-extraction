@@ -31,7 +31,14 @@ class PreprocessManager():
 
     def process_sentencewise(self, doc):
         data = []
-        entities, events = doc
+        entities, val_timexs, events = doc
+
+        # print('## ENTITY ##')
+        # pp.pprint(entities[0])
+        # print('## VALTIEMX ##')
+        # pp.pprint(val_timexs[0])
+        # print('\n\n\n## EVENT ##')
+        # pp.pprint(events[0])
 
         for event in events:
             for e_mention in event['event_mention']:
@@ -39,12 +46,7 @@ class PreprocessManager():
                 item['raw_sent'] = e_mention['ldc_scope']['text']
                 sent_pos = [int(i) for i in e_mention['ldc_scope']['position']]
                 entities_in_sent = self.search_entity_in_sentence(entities, sent_pos)
-
-                # TODO
-                # 1. 문장 범위 내에 있는 Entity 찾기
-                # 2. Entity는 한 단어로 처리
-                # 3. 문장을 list of string으로 처리하고, trigger position은 그 안에서의 position으로 표기
-                # 4. output은 document 내의 position이 아니라 다른걸로 돌리기
+                val_timexs_in_sent = self.search_valtimex_in_sentence(val_timexsm, sent_pos)
 
         pass
 
@@ -59,6 +61,9 @@ class PreprocessManager():
                     entities_in_sent.append(mention)
 
         return entities_in_sent
+
+    def search_valtimex_in_sentence(self, valtimex, sent_pos)
+        pass
 
     def fname_search(self):
         '''
@@ -79,24 +84,24 @@ class PreprocessManager():
     def process_one_file(self, fname):
         # args fname = (sgm fname(full path), xml fname(full path))
         # return some multiple [ sentence, entities, event mention(trigger + argument's information]
-        xml_ent_res, xml_event_res = self.parse_one_xml(fname[1])
+        xml_ent_res, xml_valtimex_res, xml_event_res = self.parse_one_xml(fname[1])
         # sgm_ent_res, sgm_event_res = self.parse_one_sgm(fname[0])
         # TODO : merge xml and sgm file together
-        return xml_ent_res, xml_event_res
+        return xml_ent_res, xml_valtimex_res, xml_event_res
 
     def parse_one_xml(self, fname):
         tree = ET.parse(fname)
         root = tree.getroot()
-        entities, events = [], []
+        entities, val_timex, events = [], [], []
 
         for child in root[0]:
             if child.tag == 'entity':
                 entities.append(self.xml_entity_parse(child, fname))
             if child.tag in ['value', 'timex2']:
-                entities.append(self.xml_value_timex_parse(child, fname))
+                val_timex.append(self.xml_value_timex_parse(child, fname))
             if child.tag == 'event':
                 events.append(self.xml_event_parse(child, fname))
-        return entities, events
+        return entities, val_timex, events
 
     def xml_value_timex_parse(self, item, fname):
         child = item.attrib
