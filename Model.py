@@ -1,7 +1,9 @@
+import time, datetime, os
 import tensorflow as tf
+import Dataset
 
 """ 
-Original taken from https://github.com/zhangluoyang/cnn-for-auto-event-extract
+This source code is referred to by original https://github.com/zhangluoyang/cnn-for-auto-event-extract.
 """
 
 
@@ -126,17 +128,13 @@ class Model():
             self.accuracy = accuracy
 
 
-from DataSets import datasets
-import time
-import datetime
-import os
 
 file = 'datas_ace.txt'
 store_path = "ace_data.txt"
 data_batch_size = 20
 max_sequence_length = 20
 windows = 3  # The size of the selected context window
-datas = datasets(file=file,
+datas = Dataset.datasets(file=file,
                  store_path=store_path,
                  batch_size=data_batch_size,
                  max_sequence_length=max_sequence_length,
