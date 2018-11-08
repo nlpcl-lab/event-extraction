@@ -92,9 +92,23 @@ class PreprocessManager():
         for child in root[0]:
             if child.tag == 'entity':
                 entities.append(self.xml_entity_parse(child, fname))
+            if child.tag in ['value', 'timex2']:
+                entities.append(self.xml_value_timex_parse(child, fname))
             if child.tag == 'event':
                 events.append(self.xml_event_parse(child, fname))
         return entities, events
+
+    def xml_value_timex_parse(self, item, fname):
+        child = item.attrib
+        child['fname'] = fname
+        child['mention'] = []
+        for sub in item:
+            mention = sub.attrib
+            mention['position'] = [sub[0][0].attrib['START'], sub[0][0].attrib['END']]
+            mention['text'] = sub[0][0].text
+            pp.pprint(mention)
+            child['mention'].append(mention)
+        return child
 
     def xml_entity_parse(self, item, fname):
         entity = item.attrib
