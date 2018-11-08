@@ -13,17 +13,23 @@ class PreprocessManager():
         Overall Iterator for whole dataset
         '''
         fnames = self.fname_search() #list of tuple (sgm file, apf.xml file)
+
+
         pass
 
     def fname_search(self):
-        fname_list = []
-
+        '''
+        Search dataset directory & Return list of (sgm file, apf.xml file)
+        '''
+        fname_list = list()
         for dir in self.dir_list:
             full_path = self.dir_path.format(dir)
             flist = os.listdir(full_path)
-            print(flist)
-
-
+            for fname in flist:
+                if '.sgm' not in fname: continue
+                raw = fname.split('.sgm')[0]
+                fname_list.append((self.dir_path.format(dir)+raw+'.sgm',self.dir_path.format(dir)+raw+'apf.xml'))
+        return fname_list
 
     def process_one_doc(self, path, docname):
         pass
