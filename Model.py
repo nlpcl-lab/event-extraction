@@ -3,7 +3,7 @@ import tensorflow as tf
 import Dataset
 
 """ 
-Original taken from https://github.com/zhangluoyang/cnn-for-auto-event-extract
+This source code is referred to by original https://github.com/zhangluoyang/cnn-for-auto-event-extract.
 """
 
 
