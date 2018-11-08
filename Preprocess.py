@@ -65,7 +65,6 @@ class PreprocessManager():
             if child.tag == 'event':
                 events.append(self.xml_event_parse(child))
 
-
     def xml_entity_parse(self, item):
         entity = item.attrib
         entity['mention'] = []
@@ -81,15 +80,18 @@ class PreprocessManager():
             entity['mention'].append(mention)
         return entity
 
+    def xml_event_parse(self, item):
+        #  event: one event item
+        event = item.attrib
+        event['argument'] = []
 
+        for sub in item:
+            if sub.tag == 'event_argument':
+                event['argument'].append(sub.atrrib)
+                continue
+            if sub.tag == 'event_mention':
 
-
-
-
-    def xml_event_parse(self, child):
-
-        pass
-
+        return event
 
     def parse_one_sgm(self, fname):
         pass
