@@ -1,0 +1,13 @@
+.idea/
+data/
+venv/
+__pycache__/
+*.txt
+word_embed/
+debug/
+*.xlsx
+*.json
+logdir/
+logdir_dev/
+house/
+mnli/
