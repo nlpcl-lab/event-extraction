@@ -55,7 +55,7 @@ class PreprocessManager():
         # args fname = (sgm fname(full path), xml fname(full path))
         # return some multiple [ sentence, entities, event mention(trigger + argument's information]
         xml_ent_res, xml_event_res = self.parse_one_xml(fname[1])
-        #sgm_ent_res, sgm_event_res = self.parse_one_sgm(fname[0])
+        # sgm_ent_res, sgm_event_res = self.parse_one_sgm(fname[0])
         # TODO : merge xml and sgm file together
         return xml_ent_res, xml_event_res
 
@@ -124,7 +124,7 @@ class PreprocessManager():
             doc_id = doc.docid.text
             doc_type = doc.doctype.text.strip()
             date_time = doc.datetime.text
-            headline = doc.headline.text
+            headline =  doc.headline.text if doc.headline else ''
 
             body = []
 
@@ -135,8 +135,8 @@ class PreprocessManager():
                     post.poster.extract()
                     post_date = post.postdate.text
                     post.postdate.extract()
-                    subject = post.subject.text
-                    post.subject.extract()
+                    subject = post.subject.text if post.subject else ''
+                    if post.subject: post.subject.extract()
                     text = post.text
                     body.append({
                         'poster': poster,
@@ -144,18 +144,26 @@ class PreprocessManager():
                         'subject': subject,
                         'text': text,
                     })
-            elif doc_type == 'STORY':
+            elif doc_type in ['STORY', 'CONVERSATION', 'NEWS STORY']:
                 turns = soup.findAll('turn')
                 for turn in turns:
-                    speaker = turn.speaker.text
-                    turn.speaker.extract()
+                    speaker = turn.speaker.text if turn.speaker else ''
+                    if turn.speaker: turn.speaker.extract()
                     text = turn.text
                     body.append({
                         'speaker': speaker,
                         'text': text,
                     })
-            else:
-                print('another type! :', doc_type)
+
+            result = {
+                'doc_id': doc_id,
+                'doc_type': doc_type,
+                'date_time': date_time,
+                'headline': headline,
+                'body': body,
+            }
+
+            return result
 
     def Data2Json(self, data):
         pass
