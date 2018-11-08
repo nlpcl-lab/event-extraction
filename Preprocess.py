@@ -2,8 +2,12 @@ import os
 import xml.etree.ElementTree as ET
 import pickle
 from Config import MyConfig
+import pprint
 from bs4 import BeautifulSoup
 import json
+
+
+pp = pprint.PrettyPrinter(indent=4)
 
 
 class PreprocessManager():
@@ -55,9 +59,12 @@ class PreprocessManager():
         entities, events = [],[]
 
         for child in root[0]:
-            if child.tag == 'entity': self.xml_entity_parse(child)
-            if child.tag == 'event': self.xml_event_parse(child)
-            break
+            if child.tag == 'entity':
+                entities.append(self.xml_entity_parse(child))
+
+            if child.tag == 'event':
+                events.append(self.xml_event_parse(child))
+
 
     def xml_entity_parse(self, item):
         entity = item.attrib
@@ -66,7 +73,16 @@ class PreprocessManager():
 
         for sub in item:
             if sub.tag != 'entity_mention': continue
-            mention = []
+            mention = sub.attrib
+            for el in sub: #charseq and head
+                mention[el.tag] = dict()
+                mention[el.tag]['position'] = [el[0].attrib['START'],el[0].attrib['END']]
+                mention[el.tag]['text'] = el[0].text
+            entity['mention'].append(mention)
+        return entity
+
+
+
 
 
 
