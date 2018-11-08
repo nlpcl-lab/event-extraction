@@ -125,3 +125,132 @@ class Model():
             correct = tf.equal(predicts, tf.argmax(input_y, 1))
             accuracy = tf.reduce_mean(tf.cast(correct, "float"), name="accuracy")
             self.accuracy = accuracy
+
+
+from DataSets import datasets
+import time
+import datetime
+import os
+
+file = 'datas_ace.txt'
+store_path = "ace_data_2016_12_02"
+data_batch_size = 20
+max_sequence_length = 20
+windows = 3  # The size of the selected context window
+datas = datasets(file=file,
+                 store_path=store_path,
+                 batch_size=data_batch_size,
+                 max_sequence_length=max_sequence_length,
+                 windows=windows)
+
+# parameters of the neural network model
+sentence_length = max_sequence_length
+num_labels = datas.labels_size
+vocab_size = datas.words_size
+word_embedding_size = 100
+pos_embedding_size = 10
+filter_sizes = [3, 4, 5]
+filter_num = 100
+batch_size = None
+lr = 1e-3
+num_epochs = 20
+with tf.Graph().as_default():
+    sess = tf.Session()
+    with sess.as_default():
+        model = Model(sentence_length=sentence_length,
+                      num_labels=num_labels,
+                      vocab_size=vocab_size,
+                      word_embedding_size=word_embedding_size,
+                      pos_embedding_size=pos_embedding_size,
+                      filter_sizes=filter_sizes,
+                      filter_num=filter_num,
+                      batch_size=batch_size)
+
+        optimizer = tf.train.AdamOptimizer(1e-3)
+        grads_and_vars = optimizer.compute_gradients(model.loss)
+        train_op = optimizer.apply_gradients(grads_and_vars)
+
+        timestamp = str(int(time.time()))
+        out_dir = os.path.abspath(os.path.join(os.path.curdir, "ace_cnn_model_02", timestamp))
+        print("Writing to {}\n".format(out_dir))
+        checkpoint_dir = os.path.abspath(os.path.join(out_dir, "checkpoints"))
+        checkpoint_prefix = os.path.join(checkpoint_dir, "model")
+        if not os.path.exists(checkpoint_dir):
+            os.makedirs(checkpoint_dir)
+        saver = tf.train.Saver(tf.all_variables(), max_to_keep=100)
+        sess.run(tf.initialize_all_variables())
+
+
+        def train_step(input_x,input_y,input_t,input_c,input_t_pos,input_c_pos,dropout_keep_prob,sentence_features,input_t_context,input_c_context):
+            feed_dict = {
+                model.input_x: input_x,
+                model.input_y: input_y,
+                # model.input_t:input_t,
+                # model.input_c:input_c,
+                model.input_t_pos: input_t_pos,
+                model.input_c_pos: input_c_pos,
+                model.dropout_keep_prob: dropout_keep_prob,
+                # model.sentence_features : sentence_features,
+                # model.input_t_context:input_t_context,
+                # model.input_c_context:input_c_context
+            }
+            _, loss, accuracy = sess.run(
+                [train_op, model.loss, model.accuracy],
+                feed_dict)
+            time_str = datetime.datetime.now().isoformat()
+            print("{}: , loss {:g}, acc {:g}".format(time_str, loss, accuracy))
+
+
+        # There is no need to calculate the gradient or the weight update in the test phase.
+        def eval_step(input_x, input_y, input_t, input_c, input_t_pos, input_c_pos, dropout_keep_prob, sentence_features, input_t_context, input_c_context):
+            feed_dict = {
+                model.input_x: input_x,
+                model.input_y: input_y,
+                # model.input_t:input_t,
+                # model.input_c:input_c,
+                model.input_t_pos: input_t_pos,
+                model.input_c_pos: input_c_pos,
+                model.dropout_keep_prob: dropout_keep_prob,
+                # model.sentence_features: sentence_features,
+                # model.input_t_context: input_t_context,
+                # model.input_c_context: input_c_context
+            }
+            accuracy, predicts = sess.run([model.accuracy, model.predicts], feed_dict)
+            print("eval accuracy:{}".format(accuracy))
+            return predicts
+
+
+        # sentences_fatures, c_context, t_context, pos_tag
+        for i in range(num_epochs):
+            for j in range(datas.instances_size // data_batch_size):
+                x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = datas.next_cnn_data()
+                train_step(input_x=x,
+                           input_y=y,
+                           input_t=t,
+                           input_c=c,
+                           input_c_pos=pos_c,
+                           input_t_pos=pos_t,
+                           dropout_keep_prob=0.8,
+                           sentence_features=sentences_f,
+                           input_t_context=t_context,
+                           input_c_context=c_context)
+
+        print("-------------------------------------------------------------------------")
+        x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = datas.eval_cnn_data()
+        predicts = eval_step(input_x=x,
+                             input_y=y,
+                             input_t=t,
+                             input_c=c,
+                             input_c_pos=pos_c,
+                             input_t_pos=pos_t,
+                             dropout_keep_prob=1.0,
+                             sentence_features=sentences_f,
+                             input_t_context=t_context,
+                             input_c_context=c_context)
+        # test results
+        for i in range(len(x)):
+            print("Input data：{}".format(", ".join(map(lambda h: datas.all_words[h], x[i]))))
+            print("Trigger word：{}".format(", ".join(map(lambda h: datas.all_words[h], t[i]))))
+            print("Candidate：{}".format(", ".join(map(lambda h: datas.all_words[h], c[i]))))
+            print("Prediction:{}".format(predicts[i]))
+            print("-------------------------------------------------------------------------")
