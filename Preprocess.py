@@ -46,24 +46,44 @@ class PreprocessManager():
                 item['raw_sent'] = e_mention['ldc_scope']['text']
                 sent_pos = [int(i) for i in e_mention['ldc_scope']['position']]
                 entities_in_sent = self.search_entity_in_sentence(entities, sent_pos)
-                val_timexs_in_sent = self.search_valtimex_in_sentence(val_timexsm, sent_pos)
+                val_timexs_in_sent = self.search_valtimex_in_sentence(val_timexs, sent_pos)
+                final_data = self.packing_sentence(e_mention, sent_pos, entities_in_sent, val_timexs_in_sent)
+                print('raw_sent :   {}'.format(item['raw_sent']))
+                print(e_mention['anchor'])
+                print(sent_pos)
+                for e in entities_in_sent:
+                    print(e)
+                print(val_timexs_in_sent)
+                input()
 
-        pass
+    def packing_sentence(self, e_mention, sent_pos, entities, valtimexes):
 
-    def search_entity_in_sentence(self, entities, sent_pos):
+
+
+
+
+    @staticmethod
+    def search_entity_in_sentence(entities, sent_pos):
         entities_in_sent = list()
         check = dict()
         for entity in entities:
             for mention in entity['mention']:
-                if sent_pos[0] < int(mention['head']['position'][0]) and int(mention['head']['position'][1]) < sent_pos[1]:
-                    if mention['head']['position'][0] in check: continue
+                if sent_pos[0] <= int(mention['head']['position'][0]) and int(mention['head']['position'][1]) <= sent_pos[1]:
+                    if mention['head']['position'][0] in check:  # duplicate entity in one word.
+                        print('으악!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                        raise ValueError
                     check[mention['head']['position'][0]] = 1
                     entities_in_sent.append(mention)
-
         return entities_in_sent
 
-    def search_valtimex_in_sentence(self, valtimex, sent_pos)
-        pass
+    @staticmethod
+    def search_valtimex_in_sentence(valtimex, sent_pos):
+        valtimex_in_sent = list()
+        for item in valtimex:
+            for mention in item['mention']:
+                if sent_pos[0] <= int(mention['position'][0]) and sent_pos[1] >= int(mention['position'][1]):
+                    valtimex_in_sent.append(mention)
+        return valtimex_in_sent
 
     def fname_search(self):
         '''
@@ -86,7 +106,7 @@ class PreprocessManager():
         # return some multiple [ sentence, entities, event mention(trigger + argument's information]
         xml_ent_res, xml_valtimex_res, xml_event_res = self.parse_one_xml(fname[1])
         # sgm_ent_res, sgm_event_res = self.parse_one_sgm(fname[0])
-        # TODO : merge xml and sgm file together
+        # TODO : merge xml and sgm file together if need.
         return xml_ent_res, xml_valtimex_res, xml_event_res
 
     def parse_one_xml(self, fname):
@@ -111,7 +131,6 @@ class PreprocessManager():
             mention = sub.attrib
             mention['position'] = [sub[0][0].attrib['START'], sub[0][0].attrib['END']]
             mention['text'] = sub[0][0].text
-            pp.pprint(mention)
             child['mention'].append(mention)
         return child
 
