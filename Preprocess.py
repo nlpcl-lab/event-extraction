@@ -24,15 +24,36 @@ class PreprocessManager():
         total_res = []
         for fname in fnames:
             total_res.append(self.process_one_file(fname))
+        dataset = []
+        for doc in total_res:
+            dataset.append(self.process_sentencewise(doc))
 
-        print('## ENTITY ##')
-        pp.pprint(total_res[0][0][0])
-        print('\n\n\n## EVENT ##')
-        pp.pprint(total_res[0][1][0])
+        # TODO: save as json file
 
-        # json_result = self.Data2Json(total_res)
-        # with open('./data/dump.txt','wb') as f:
-        #     pickle.dump(json_result,f)
+
+    def process_sentencewise(self, doc):
+        data = []
+        entities, events = doc
+
+        for event in events:
+            for e_mention in event['event_mention']:
+                item = {'TYPE': event['TYPE'], 'SUBTYPE': event['SUBTYPE']}
+                item['raw_sent'] = e_mention['ldc_scope']['text']
+
+                sent_pos = (int(i) for i in e_mention['loc_scope']['position'])
+                entities_in_sent = self.search_entity_in_sentence(entities, sent_pos)
+
+
+                # TODO
+                # 1. 문장 범위 내에 있는 Entity 찾기
+                # 2. Entity는 한 단어로 처리
+                # 3. 문장을 list of string으로 처리하고, trigger position은 그 안에서의 position으로 표기
+                # 4. output은 document 내의 position이 아니라 다른걸로 돌리기
+
+        pass
+
+    def search_entity_in_sentence(self, entities, sent_pos):
+        pass
 
 
     def fname_search(self):
