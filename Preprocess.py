@@ -8,7 +8,7 @@ class PreprocessManager():
         self.dir_list = MyConfig.raw_dir_list
         self.dir_path = MyConfig.raw_data_path
 
-    def preprocess(self, doc):
+    def preprocess(self):
         '''
         Overall Iterator for whole dataset
         '''
@@ -37,5 +37,6 @@ class PreprocessManager():
 
 
 if __name__ == '__main__':
-    a = PreprocessManager()
+    man = PreprocessManager()
+    man.p
 
