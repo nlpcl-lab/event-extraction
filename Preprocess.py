@@ -6,7 +6,6 @@ import pprint
 from bs4 import BeautifulSoup
 import json
 
-
 pp = pprint.PrettyPrinter(indent=4)
 
 
@@ -20,7 +19,7 @@ class PreprocessManager():
         '''
         Overall Iterator for whole dataset
         '''
-        fnames = self.fname_search() #list of tuple (sgm file, apf.xml file)
+        fnames = self.fname_search()  # list of tuple (sgm file, apf.xml file)
         total_res = []
         for fname in fnames:
             total_res.append(self.process_one_file(fname))
@@ -30,7 +29,6 @@ class PreprocessManager():
 
         # TODO: save as json file
 
-
     def process_sentencewise(self, doc):
         data = []
         entities, events = doc
@@ -39,15 +37,8 @@ class PreprocessManager():
             for e_mention in event['event_mention']:
                 item = {'TYPE': event['TYPE'], 'SUBTYPE': event['SUBTYPE']}
                 item['raw_sent'] = e_mention['ldc_scope']['text']
-
-                try:
-                    sent_pos = (int(i) for i in e_mention['ldc_scope']['position'])
-                    entities_in_sent = self.search_entity_in_sentence(entities, sent_pos)
-                except KeyError as e:
-                    print(e)
-                    print('e_mention:', e_mention)
-                    exit(0)
-
+                sent_pos = [int(i) for i in e_mention['ldc_scope']['position']]
+                entities_in_sent = self.search_entity_in_sentence(entities, sent_pos)
 
                 # TODO
                 # 1. 문장 범위 내에 있는 Entity 찾기
@@ -58,8 +49,16 @@ class PreprocessManager():
         pass
 
     def search_entity_in_sentence(self, entities, sent_pos):
-        pass
+        entities_in_sent = list()
+        check = dict()
+        for entity in entities:
+            for mension in entity['mention']:
+                if sent_pos[0] < int(mension['head']['position'][0]) and int(mension['head']['position'][1]) < sent_pos[1]:
+                    if mension['head']['position'][0] in check: continue
+                    check[mension['head']['position'][0]] = 1
+                    entities_in_sent.append(mension)
 
+        return entities_in_sent
 
     def fname_search(self):
         '''
@@ -74,7 +73,7 @@ class PreprocessManager():
             for fname in flist:
                 if '.sgm' not in fname: continue
                 raw = fname.split('.sgm')[0]
-                fname_list.append((self.dir_path.format(dir)+raw+'.sgm',self.dir_path.format(dir)+raw+'.apf.xml'))
+                fname_list.append((self.dir_path.format(dir) + raw + '.sgm', self.dir_path.format(dir) + raw + '.apf.xml'))
         return fname_list
 
     def process_one_file(self, fname):
@@ -88,7 +87,7 @@ class PreprocessManager():
     def parse_one_xml(self, fname):
         tree = ET.parse(fname)
         root = tree.getroot()
-        entities, events = [],[]
+        entities, events = [], []
 
         for child in root[0]:
             if child.tag == 'entity':
@@ -105,9 +104,9 @@ class PreprocessManager():
         for sub in item:
             if sub.tag != 'entity_mention': continue
             mention = sub.attrib
-            for el in sub: #charseq and head
+            for el in sub:  # charseq and head
                 mention[el.tag] = dict()
-                mention[el.tag]['position'] = [el[0].attrib['START'],el[0].attrib['END']]
+                mention[el.tag]['position'] = [el[0].attrib['START'], el[0].attrib['END']]
                 mention[el.tag]['text'] = el[0].text
             entity['mention'].append(mention)
         return entity
@@ -127,15 +126,15 @@ class PreprocessManager():
                 mention = sub.attrib  # init dict with mention ID
                 mention['argument'] = []
                 for el in sub:
-                    if el.tag=='event_mention_argument':
+                    if el.tag == 'event_mention_argument':
                         one_arg = el.attrib
-                        one_arg['position'] = [el[0][0].attrib['START'],el[0][0].attrib['END']]
+                        one_arg['position'] = [el[0][0].attrib['START'], el[0][0].attrib['END']]
                         one_arg['text'] = el[0][0].text
                         mention['argument'].append(one_arg)
-                    else: # [extent, ldc_scope, anchor] case
+                    else:  # [extent, ldc_scope, anchor] case
                         for seq in el:
                             mention[el.tag] = dict()
-                            mention[el.tag]['position'] = [seq.attrib['START'],seq.attrib['END']]
+                            mention[el.tag]['position'] = [seq.attrib['START'], seq.attrib['END']]
                             mention[el.tag]['text'] = seq.text
                 event['event_mention'].append(mention)
         return event
@@ -150,7 +149,7 @@ class PreprocessManager():
             doc_id = doc.docid.text
             doc_type = doc.doctype.text.strip()
             date_time = doc.datetime.text
-            headline =  doc.headline.text if doc.headline else ''
+            headline = doc.headline.text if doc.headline else ''
 
             body = []
 
@@ -204,4 +203,3 @@ class PreprocessManager():
 if __name__ == '__main__':
     man = PreprocessManager()
     man.preprocess()
-
