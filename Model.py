@@ -143,7 +143,7 @@ word_embedding_size = 100
 pos_embedding_size = 10
 filter_sizes = [3, 4, 5]
 filter_num = 100
-batch_size = None
+batch_size = 10
 lr = 1e-3
 num_epochs = 20
 with tf.Graph().as_default():
@@ -215,7 +215,7 @@ with tf.Graph().as_default():
         # sentences_features, c_context, t_context, pos_tag
         for i in range(num_epochs):
             for j in range(dataset.instances_size // data_batch_size):
-                x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = dataset.next_cnn_data()
+                x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = dataset.next_train_data()
                 train_step(input_x=x,
                            input_y=y,
                            input_t=t,
@@ -228,7 +228,7 @@ with tf.Graph().as_default():
                            input_c_context=c_context)
 
         print("-------------------------------------------------------------------------")
-        x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = dataset.eval_cnn_data()
+        x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = dataset.eval_data()
         predicts = eval_step(input_x=x,
                              input_y=y,
                              input_t=t,

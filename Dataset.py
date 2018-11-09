@@ -130,3 +130,6 @@ class Dataset:
             pos_tag)
 
         return x, t, c, one_hot(y, len(self.all_labels)), pos_c, pos_t, pos_tag
+
+    def eval_data(self):
+        pass
