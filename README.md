@@ -3,6 +3,8 @@
 
 "[GoogleNews-vectors-negative300](https://code.google.com/archive/p/word2vec/)" is used as pre-trained word2vec model.
 
+TODO: Increase the number of data used for evaluation (currently only 30)
+
 ```bash
 2018-11-10T03:38:16.408551: loss 0.00862374, acc 1
 2018-11-10T03:38:16.484978: loss 0.427776, acc 0.933333
