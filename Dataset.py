@@ -95,16 +95,7 @@ class Dataset:
 
     def next_train_data(self):
         batch_instances = self.next_batch()
-        pos_tag = []
-        y = []
-        x = []
-        t = []
-        c = []
-        pos_c = []
-        pos_t = []
-
-        c_context = []
-        t_context = []
+        pos_tag, y, x, t, c, pos_c, pos_t = [list() for _ in range(7)]
 
         for instance in batch_instances:
             words = instance.words
@@ -138,4 +129,4 @@ class Dataset:
         assert len(y) == len(x) == len(t) == len(c) == len(pos_c) == len(pos_t) == len(
             pos_tag)
 
-        return x, t, c, one_hot(y, self.labels_size), pos_c, pos_t, c_context, t_context, pos_tag
+        return x, t, c, one_hot(y, len(self.all_labels)), pos_c, pos_t, pos_tag
