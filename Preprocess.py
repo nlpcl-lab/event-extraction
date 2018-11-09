@@ -47,19 +47,27 @@ class PreprocessManager():
                 sent_pos = [int(i) for i in e_mention['ldc_scope']['position']]
                 entities_in_sent = self.search_entity_in_sentence(entities, sent_pos)
                 val_timexs_in_sent = self.search_valtimex_in_sentence(val_timexs, sent_pos)
+                e_mention = self.get_argument_head(entities_in_sent, e_mention)
                 final_data = self.packing_sentence(e_mention, tmp, sent_pos, entities_in_sent, val_timexs_in_sent)
                 print('raw_sent :   {}'.format(tmp['raw_sent']))
+
                 pp.pprint(e_mention)
                 print()
                 print(sent_pos)
                 for e in entities_in_sent:
-                    print(e)
+                    print('entity   :   '+str(e))
                 print(val_timexs_in_sent)
                 input()
 
-    def get_argument_head(self, entities, e_mention):
-        pass
-
+    @staticmethod
+    def get_argument_head(entities, e_mention):
+        for idx, arg in enumerate(e_mention['argument']):
+            arg_refID = arg['REFID']
+            for entity in entities:
+                if entity['ID'] == arg_refID:
+                    e_mention['argument'][idx]['position_head'] = entity['head']['position']
+                    e_mention['argument'][idx]['text_head'] = entity['head']['text']
+        return e_mention
 
     def packing_sentence(self, e_mention, tmp, sent_pos, entities, valtimexes):
         # TODO : argument가 extent니깐, entity ID 가지고 entity head 가져온 다음에 그 head만 argument로 마크하기 
