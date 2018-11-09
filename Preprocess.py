@@ -30,15 +30,7 @@ class PreprocessManager():
         # TODO: save as json file
 
     def process_sentencewise(self, doc):
-        data = []
         entities, val_timexs, events = doc
-
-        # print('## ENTITY ##')
-        # pp.pprint(entities[0])
-        # print('## VALTIEMX ##')
-        # pp.pprint(val_timexs[0])
-        # print('\n\n\n## EVENT ##')
-        # pp.pprint(events[0])
 
         for event in events:
             for e_mention in event['event_mention']:
@@ -50,7 +42,6 @@ class PreprocessManager():
                 e_mention = self.get_argument_head(entities_in_sent, e_mention)
                 final_data = self.packing_sentence(e_mention, tmp, sent_pos, entities_in_sent, val_timexs_in_sent)
 
-                input()
 
     @staticmethod
     def get_argument_head(entities, e_mention):
@@ -73,11 +64,6 @@ class PreprocessManager():
         # Each Entity, value, timex2 overlap check
         assert self.check_entity_overlap(entities, valtimexes)
 
-        pp.pprint(e_mention)
-
-        pp.pprint(entities)
-        pp.pprint(valtimexes)
-
         idx_list = [0 for i in range(len(e_mention['ldc_scope']['text']))]
         assert len(idx_list) == (int(e_mention['ldc_scope']['position'][1])-int(e_mention['ldc_scope']['position'][0])+1)
         sent_start_idx = int(e_mention['ldc_scope']['position'][0])
@@ -91,7 +77,7 @@ class PreprocessManager():
         for val in valtimexes:
             ent_start_idx = int(val['position'][0])
             for i in range(int(val['position'][1]) - int(val['position'][0]) + 1):
-                if idx_list[ent_start_idx + i - sent_start_idx]==1: raise ValueError('끼악~~~~~~~~~~~~~~~~~~~~')
+                #if idx_list[ent_start_idx + i - sent_start_idx]==1: raise ValueError('끼악~~~~~~~~~~~~~~~~~~~~')
                 idx_list[ent_start_idx + i - sent_start_idx] = 1  # entity mark
 
         token_list = []
@@ -115,9 +101,11 @@ class PreprocessManager():
                 token_list.append(curr_token)
 
         assert len(token_list)==len(entity_mark_list)
-
         good_token_list = []  # TODO: The better name....
         good_entity_mark_list = []
+
+        # print(token_list)
+        # print(entity_mark_list)
 
         for tok, mark in zip(token_list, entity_mark_list):
             if mark == '*':
@@ -131,30 +119,38 @@ class PreprocessManager():
 
         argument_role_label = ['*' for i in range(len(good_entity_mark_list))]
         for arg in e_mention['argument']:
-            arg_text,arg_role = arg['text_head'],arg['ROLE']
-            assert good_token_list.count(arg_text) == 1  # 단 한번!
-            arg_idx = good_token_list.index(arg_text)
+            if 'text_head' in arg:
+                arg_text,arg_role = arg['text_head'],arg['ROLE']
+            else:
+                arg_text,arg_role = arg['text'],arg['ROLE']
+
+            #assert good_token_list.count(arg_text) in [0,1,2]  # 단 한번!
+            # TODO: Move this part to up
+            if arg_text not in good_token_list:
+                for idx,el in enumerate(good_token_list):
+                    if arg_text in el:
+                        arg_idx = idx
+                        break
+            else:
+                arg_idx = good_token_list.index(arg_text)
             argument_role_label[arg_idx] = arg_role
 
+
         trigger_type_label = ['*' for i in range(len(good_entity_mark_list))]
-        trigger_idx = good_token_list.index(e_mention['anchor']['text'])
+        if e_mention['anchor']['text'] in good_token_list:
+            trigger_idx = good_token_list.index(e_mention['anchor']['text'])
+        else:
+            for idx,tok in enumerate(token_list):
+                if e_mention['anchor']['text'] in tok:
+                    trigger_idx = idx
         trigger_type_label[trigger_idx] = tmp['TYPE']+'/'+tmp['SUBTYPE']
 
-        print()
-        print('')
-        print(e_mention['ldc_scope']['text'])
-        print(good_token_list)
-        print(good_entity_mark_list)
-        print(trigger_type_label)
-        print(argument_role_label)
-
-
-
-
-
-
-
-
+        print('SENT :   {}'.format(e_mention['ldc_scope']['text']))
+        print('TOKEN LIST :  {}'.format(good_token_list))
+        print('ENTITY MARK :  {}'.format(good_entity_mark_list))
+        print('TRIGGER MARK :   {}'.format(trigger_type_label))
+        print('ARGUMENT MARK :   {}'.format(argument_role_label))
+        print('\n\n')
 
 
     @staticmethod
