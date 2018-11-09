@@ -74,9 +74,6 @@ class PreprocessManager():
         assert self.check_entity_overlap(entities, valtimexes)
 
         pp.pprint(e_mention)
-        print()
-        pp.pprint(entities)
-        pp.pprint(valtimexes)
 
         idx_list = [0 for i in range(len(e_mention['ldc_scope']['text']))]
         assert len(idx_list) == (int(e_mention['ldc_scope']['position'][1])-int(e_mention['ldc_scope']['position'][0])+1)
@@ -95,25 +92,36 @@ class PreprocessManager():
                 idx_list[ent_start_idx + i - sent_start_idx] = 1  # entity mark
 
         token_list = []
+        entity_mark_list = []
         curr_token = ''
-        print(idx_list)
         for idx, el in enumerate(e_mention['ldc_scope']['text']):
             if idx==0:
                 curr_token += el
                 continue
-
             if idx_list[idx]!=idx_list[idx-1]:
+                if idx_list[idx-1]==1: entity_mark_list.append('E')
+                else: entity_mark_list.append('N')
                 token_list.append(curr_token)
                 curr_token = el
                 continue
-
             curr_token += el
-
             if idx == len(e_mention['ldc_scope']['text'])-1:
+                if idx_list[idx]==1: entity_mark_list.append('E')
+                else: entity_mark_list.append('N')
                 token_list.append(curr_token)
 
         print(e_mention['ldc_scope']['text'])
         print(token_list)
+        print(entity_mark_list)
+        assert len(token_list)==len(entity_mark_list)
+
+        good_token_list = []  # TODO: The better name....
+        good_entity_mark_list = []
+
+        for tok, mark in zip(token_list, entity_mark_list):
+            if mark == 'N':
+                splitted_tok = tok.split()
+
 
 
 
