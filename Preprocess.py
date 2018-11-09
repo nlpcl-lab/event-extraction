@@ -14,23 +14,56 @@ class PreprocessManager():
         self.dir_list = MyConfig.raw_dir_list
         self.dir_path = MyConfig.raw_data_path
         self.dataset = []
-        self.vocab, self.all_labels_event, self.all_labels_role = [set() for i in range(3)]
-        print(len(self.dataset))
+        self.tri_task_format = []
+        self.arg_task_format = []
 
     def preprocess(self):
         '''
         Overall Iterator for whole dataset
         '''
         fnames = self.fname_search()
-        print('Total XML file: {}'.format(fnames))
+        print('Total XML file: {}'.format(len(fnames)))
         total_res = []
         for fname in fnames:
             total_res.append(self.process_one_file(fname))
         print('total_event: {}개'.format(len(total_res)))
         for doc in total_res:
-            self.dataset.append(self.process_sentencewise(doc))
+            self.dataset += self.process_sentencewise(doc)
         print("END PREPROCESSING")
-        print(len(self.dataset))
+        print('TOTAL DATA :  {}'.format(len(self.dataset)))
+        self.foramt_to_argument()
+
+    def foramt_to_argument(self):
+        for d in self.dataset:
+            generated_candi =
+
+
+    def generate_argument_candidate_pos_list(self, arg_pos, enti_pos, trigger_pos):
+        cand_list = []
+        Entity_as_candidate_only = True  # Entity만 Candidates로 사용
+
+        assert len(arg_pos)==len(enti_pos)==len(trigger_pos)
+        for idx,el in enumerate(arg_pos):
+            if Entity_as_candidate_only:
+                if enti_pos[idx]!='E': continue
+            if trigger_pos[idx]!='*': continue
+
+            tri_idx_list = []
+            for j,a in enumerate(trigger_pos):
+                if a != '*': tri_idx_list.append(j)
+
+            marks = ['A' for i in range(len(arg_pos))]
+            marks[idx]='B'
+            for i in tri_idx_list:
+                marks[i]='T'
+            label = None if arg_pos[idx]=='*' else arg_pos[idx]
+            cand_list.append([marks,label])
+        return cand_list
+
+        # words = ['It', 'could', 'swell', 'to', 'as', 'much', 'as', '$500 billion', 'if', 'we', 'go', 'to', 'war', 'in',
+        #          'Iraq'],
+        # marks = ['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'T', 'A', 'B'],
+        # label = 'Place',
 
 
     def process_sentencewise(self, doc):
@@ -45,7 +78,7 @@ class PreprocessManager():
                 val_timexs_in_sent = self.search_valtimex_in_sentence(val_timexs, sent_pos)
                 e_mention = self.get_argument_head(entities_in_sent, e_mention)
                 res = self.packing_sentence(e_mention, tmp, sent_pos, entities_in_sent, val_timexs_in_sent)
-                if not res: datas.append(res)
+                if res!=1: datas.append(res)
         return datas
 
     @staticmethod
@@ -72,7 +105,7 @@ class PreprocessManager():
         idx_list = [0 for i in range(len(e_mention['ldc_scope']['text']))]
         if not (len(idx_list) == (int(e_mention['ldc_scope']['position'][1])-int(e_mention['ldc_scope']['position'][0])+1)):
             print('Exception')
-            return False
+            return 1
         sent_start_idx = int(e_mention['ldc_scope']['position'][0])
 
         # Mark Entity position
@@ -87,8 +120,6 @@ class PreprocessManager():
             ent_start_idx = int(val['position'][0])
             for i in range(int(val['position'][1]) - int(val['position'][0]) + 1):
                 idx_list[ent_start_idx + i - sent_start_idx] = 1  # entity mark
-
-
 
         token_list = []
         entity_mark_list = []
@@ -143,7 +174,7 @@ class PreprocessManager():
                 arg_idx = good_token_list.index(arg_text)
             if arg_idx==None:
                 print('Exception')
-                return False
+                return 1
             argument_role_label[arg_idx] = arg_role
 
         trigger_idx = None
