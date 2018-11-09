@@ -49,14 +49,7 @@ class PreprocessManager():
                 val_timexs_in_sent = self.search_valtimex_in_sentence(val_timexs, sent_pos)
                 e_mention = self.get_argument_head(entities_in_sent, e_mention)
                 final_data = self.packing_sentence(e_mention, tmp, sent_pos, entities_in_sent, val_timexs_in_sent)
-                print('raw_sent :   {}'.format(tmp['raw_sent']))
 
-                pp.pprint(e_mention)
-                print()
-                print(sent_pos)
-                for e in entities_in_sent:
-                    print('entity   :   '+str(e))
-                print(val_timexs_in_sent)
                 input()
 
     @staticmethod
@@ -70,8 +63,6 @@ class PreprocessManager():
         return e_mention
 
     def packing_sentence(self, e_mention, tmp, sent_pos, entities, valtimexes):
-        # TODO : argument가 extent니깐, entity ID 가지고 entity head 가져온 다음에 그 head만 argument로 마크하기 
-        
         packed_data = {
             'sentence': [],
             'label_position':[],  # label position ('T' for trigger, 'A' for argument, '*' for None of them
@@ -79,7 +70,23 @@ class PreprocessManager():
             'EVENT_SUBTYPE' : tmp['SUBTYPE'],
             'entity_position' : []
         }
+        # Each Entity, value, timex2 overlap check
+        assert self.check_entity_overlap(entities, valtimexes)
 
+        pp.pprint(e_mention)
+        print()
+        pp.pprint(entities)
+        pp.pprint(valtimexes)
+
+
+
+    @staticmethod
+    def check_entity_overlap(entities, valtimexes):
+        ranges = []
+        # TODO: Implement this later
+        for ent in entities:
+            ranges.append(None)
+        return True
 
     @staticmethod
     def search_entity_in_sentence(entities, sent_pos):
