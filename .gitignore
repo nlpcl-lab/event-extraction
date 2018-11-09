@@ -11,3 +11,5 @@ logdir/
 logdir_dev/
 house/
 mnli/
+
+*.bin
