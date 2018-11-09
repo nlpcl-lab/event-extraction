@@ -150,7 +150,7 @@ class Dataset:
             t.append([index_words[index_triggers[0]]] * self.max_sequence_length)
             c.append([index_words[index_candidates[0]]] * self.max_sequence_length)
 
-            print(len(words), len(marks), len(pos_taggings), len(index_words), len(pos_candidate), len(pos_trigger))
+            # print(len(words), len(marks), len(pos_taggings), len(index_words), len(pos_candidate), len(pos_trigger))
             assert len(words) == len(marks) == len(pos_taggings) == len(index_words) == len(pos_candidate) == len(pos_trigger)
         assert len(y) == len(x) == len(t) == len(c) == len(pos_c) == len(pos_t) == len(pos_tag)
         return x, t, c, one_hot(y, len(self.all_labels)), pos_c, pos_t, pos_tag
