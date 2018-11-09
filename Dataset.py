@@ -11,9 +11,9 @@ def find_candidates(items1, items2):
 
 def one_hot(labels, label_num):
     result = []
-    for i in range(len(labels)):
+    for label in enumerate(labels):
         one_hot_vec = [0] * label_num
-        one_hot_vec[labels[i][0]] = 1
+        one_hot_vec[label[0]] = 1
         result.append(one_hot_vec)
     return result
 
@@ -67,7 +67,7 @@ class Dataset:
         # current word: $500 billion
         read_one(
             words=['It', 'could', 'swell', 'to', 'as', 'much', 'as', '$500 billion', 'if', 'we', 'go', 'to', 'war', 'in', 'Iraq'],
-            marks=['A',  'A',     'A',     'A',  'A',  'A',    'A',  'B', 'A',  'A',  'A',  'A',  'T',   'A',  'A'],
+            marks=['A', 'A', 'A', 'A', 'A', 'A', 'A', 'B', 'A', 'A', 'A', 'A', 'T', 'A', 'A'],
             label='None',
         )
         # current word: we
@@ -115,10 +115,10 @@ class Dataset:
         pos_tag, y, x, t, c, pos_c, pos_t = [list() for _ in range(7)]
 
         for instance in batch_instances:
-            words = instance.words
-            pos_taggings = instance.pos_taggings
-            marks = instance.marks
-            label = instance.label
+            words = instance['words']
+            pos_taggings = instance['pos_taggings']
+            marks = instance['marks']
+            label = instance['label']
 
             index_candidates = find_candidates(marks, ['B'])
             assert (len(index_candidates)) == 1
@@ -128,24 +128,48 @@ class Dataset:
             marks = marks + ['A'] * (self.max_sequence_length - len(marks))
             words = words + ['<eos>'] * (self.max_sequence_length - len(words))
             pos_taggings = pos_taggings + ['*'] * (self.max_sequence_length - len(pos_taggings))
-            pos_taggings = map(lambda x: self.pos_taggings_id[x], pos_taggings)
+            pos_taggings = list(map(lambda x: self.pos_taggings_id[x], pos_taggings))
             pos_tag.append(pos_taggings)
-            index_words = map(lambda x: self.word_id[x], words)
+            index_words = list(map(lambda x: self.word_id[x], words))
             x.append(index_words)
-
-            pos_candidate = range(-index_candidates[0], 0) + range(0, self.max_sequence_length - index_candidates[0])
+            pos_candidate = [i for i in range(-index_candidates[0], 0)] + [i for i in range(0, self.max_sequence_length - index_candidates[0])]
             pos_c.append(pos_candidate)
-            pos_trigger = range(-index_triggers[0], 0) + range(0, self.max_sequence_length - index_triggers[0])
+            pos_trigger = [i for i in range(-index_triggers[0], 0)] + [i for i in range(0, self.max_sequence_length - index_triggers[0])]
             pos_t.append(pos_trigger)
-
             t.append([index_words[index_triggers[0]]] * self.max_sequence_length)
             c.append([index_words[index_candidates[0]]] * self.max_sequence_length)
-
             assert len(words) == len(marks) == len(pos_taggings) == len(index_words) == len(pos_candidate) == len(pos_trigger)
-
-        assert len(y) == len(x) == len(t) == len(c) == len(pos_c) == len(pos_t) == len(pos_tag)
-
+        assert len(y) == len(x) == len(t) == len(c) == len(pos_c) == len(pos_t) == len(
+            pos_tag)
         return x, t, c, one_hot(y, len(self.all_labels)), pos_c, pos_t, pos_tag
 
     def eval_data(self):
-        pass
+        batch_instances = self.eval_instances
+        pos_tag, y, x, t, c, pos_c, pos_t = [list() for _ in range(7)]
+        for instance in batch_instances:
+            words = instance['words']
+            pos_taggings = instance['pos_taggings']
+            marks = instance['marks']
+            label = instance['label']
+            index_candidates = find_candidates(marks, ['B'])
+            assert (len(index_candidates)) == 1
+            index_triggers = find_candidates(marks, ['T'])
+            assert (len(index_triggers)) == 1
+            y.append(label)
+            marks = marks + ['A'] * (self.max_sequence_length - len(marks))
+            words = words + ['<eos>'] * (self.max_sequence_length - len(words))
+            pos_taggings = pos_taggings + ['*'] * (self.max_sequence_length - len(pos_taggings))
+            pos_taggings = list(map(lambda x: self.pos_taggings_id[x], pos_taggings))
+            pos_tag.append(pos_taggings)
+            index_words = list(map(lambda x: self.word_id[x], words))
+            x.append(index_words)
+            pos_candidate = [i for i in range(-index_candidates[0], 0)] + [i for i in range(0, self.max_sequence_length - index_candidates[0])]
+            pos_c.append(pos_candidate)
+            pos_trigger = [i for i in range(-index_triggers[0], 0)] + [i for i in range(0, self.max_sequence_length - index_triggers[0])]
+            pos_t.append(pos_trigger)
+            t.append([index_words[index_triggers[0]]] * self.max_sequence_length)
+            c.append([index_words[index_candidates[0]]] * self.max_sequence_length)
+            assert len(words) == len(marks) == len(pos_taggings) == len(index_words) == len(pos_candidate) == len(pos_trigger)
+        assert len(y) == len(x) == len(t) == len(c) == len(pos_c) == len(pos_t) == len(
+            pos_tag)
+        return x, t, c, one_hot(y, len(self.all_labels)), pos_c, pos_t, pos_tag

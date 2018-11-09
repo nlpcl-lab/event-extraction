@@ -194,7 +194,7 @@ with tf.Graph().as_default():
 
 
         # There is no need to calculate the gradient or the weight update in the test phase.
-        def eval_step(input_x, input_y, input_t, input_c, input_t_pos, input_c_pos, dropout_keep_prob, sentence_features, input_t_context, input_c_context):
+        def eval_step(input_x, input_y, input_t, input_c, input_t_pos, input_c_pos, dropout_keep_prob):
             feed_dict = {
                 model.input_x: input_x,
                 model.input_y: input_y,
@@ -215,34 +215,29 @@ with tf.Graph().as_default():
         # sentences_features, c_context, t_context, pos_tag
         for i in range(num_epochs):
             for j in range(len(dataset.train_instances) // data_batch_size):
-                x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = dataset.next_train_data()
+                x, t, c, y, pos_c, pos_t, _ = dataset.next_train_data()
                 train_step(input_x=x,
                            input_y=y,
                            input_t=t,
                            input_c=c,
                            input_c_pos=pos_c,
                            input_t_pos=pos_t,
-                           dropout_keep_prob=0.8,
-                           sentence_features=sentences_f,
-                           input_t_context=t_context,
-                           input_c_context=c_context)
+                           dropout_keep_prob=0.8)
 
         print("-------------------------------------------------------------------------")
-        # x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = dataset.eval_data()
-        # predicts = eval_step(input_x=x,
-        #                      input_y=y,
-        #                      input_t=t,
-        #                      input_c=c,
-        #                      input_c_pos=pos_c,
-        #                      input_t_pos=pos_t,
-        #                      dropout_keep_prob=1.0,
-        #                      sentence_features=sentences_f,
-        #                      input_t_context=t_context,
-        #                      input_c_context=c_context)
-        # # test results
-        # for i in range(len(x)):
-        #     print("Input data：{}".format(", ".join(map(lambda h: dataset.all_words[h], x[i]))))
-        #     print("Trigger word：{}".format(", ".join(map(lambda h: dataset.all_words[h], t[i]))))
-        #     print("Candidate：{}".format(", ".join(map(lambda h: dataset.all_words[h], c[i]))))
-        #     print("Prediction:{}".format(predicts[i]))
-        #     print("-------------------------------------------------------------------------")
+        x, t, c, y, pos_c, pos_t, _ = dataset.eval_data()
+        predicts = eval_step(input_x=x,
+                             input_y=y,
+                             input_t=t,
+                             input_c=c,
+                             input_c_pos=pos_c,
+                             input_t_pos=pos_t,
+                             dropout_keep_prob=1.0)
+
+        # test results
+        for i in range(len(x)):
+            print("Input data：{}".format(", ".join(map(lambda h: dataset.all_words[h], x[i]))))
+            print("Trigger word：{}".format(", ".join(map(lambda h: dataset.all_words[h], t[i]))))
+            print("Candidate：{}".format(", ".join(map(lambda h: dataset.all_words[h], c[i]))))
+            print("Prediction:{}".format(predicts[i]))
+            print("-------------------------------------------------------------------------")

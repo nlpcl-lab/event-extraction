@@ -394,4 +394,4 @@ if __name__ == '__main__':
     # Example
     argument_classification_data = man.arg_task_format_data
     print('\n\n')
-    pp.pprint(argument_classification_data[0])
+    print(argument_classification_data[0])
