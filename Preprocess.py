@@ -22,9 +22,11 @@ class PreprocessManager():
         Overall Iterator for whole dataset
         '''
         fnames = self.fname_search()
+        print('Total XML file: {}'.format(fnames))
         total_res = []
         for fname in fnames:
             total_res.append(self.process_one_file(fname))
+        print('total_event: {}개'.format(len(total_res)))
         for doc in total_res:
             self.dataset.append(self.process_sentencewise(doc))
         print("END PREPROCESSING")
@@ -42,7 +44,8 @@ class PreprocessManager():
                 entities_in_sent = self.search_entity_in_sentence(entities, sent_pos)
                 val_timexs_in_sent = self.search_valtimex_in_sentence(val_timexs, sent_pos)
                 e_mention = self.get_argument_head(entities_in_sent, e_mention)
-                datas.append(self.packing_sentence(e_mention, tmp, sent_pos, entities_in_sent, val_timexs_in_sent))
+                res = self.packing_sentence(e_mention, tmp, sent_pos, entities_in_sent, val_timexs_in_sent)
+                if not res: datas.append(res)
         return datas
 
     @staticmethod
@@ -64,22 +67,28 @@ class PreprocessManager():
         }
         # Each Entity, value, timex2 overlap check
         assert self.check_entity_overlap(entities, valtimexes)
+        raw_sent = e_mention['ldc_scope']['text']
 
         idx_list = [0 for i in range(len(e_mention['ldc_scope']['text']))]
-        assert len(idx_list) == (int(e_mention['ldc_scope']['position'][1])-int(e_mention['ldc_scope']['position'][0])+1)
+        if not (len(idx_list) == (int(e_mention['ldc_scope']['position'][1])-int(e_mention['ldc_scope']['position'][0])+1)):
+            print('Exception')
+            return False
         sent_start_idx = int(e_mention['ldc_scope']['position'][0])
 
+        # Mark Entity position
         for ent in entities:
             ent_start_idx = int(ent['head']['position'][0])
             for i in range(int(ent['head']['position'][1]) - int(ent['head']['position'][0]) + 1):
                 if idx_list[ent_start_idx + i - sent_start_idx]==1: raise ValueError('까율~~~~~~~~~~~~~~~~~~')
                 idx_list[ent_start_idx + i - sent_start_idx] = 1  # entity mark
 
+        # Mark Value&Timex2 position
         for val in valtimexes:
             ent_start_idx = int(val['position'][0])
             for i in range(int(val['position'][1]) - int(val['position'][0]) + 1):
-                #if idx_list[ent_start_idx + i - sent_start_idx]==1: raise ValueError('끼악~~~~~~~~~~~~~~~~~~~~')
                 idx_list[ent_start_idx + i - sent_start_idx] = 1  # entity mark
+
+
 
         token_list = []
         entity_mark_list = []
@@ -124,6 +133,7 @@ class PreprocessManager():
 
             #assert good_token_list.count(arg_text) in [0,1,2]  # 단 한번!
             # TODO: Move this part to up
+            arg_idx = None
             if arg_text not in good_token_list:
                 for idx,el in enumerate(good_token_list):
                     if arg_text in el:
@@ -131,20 +141,31 @@ class PreprocessManager():
                         break
             else:
                 arg_idx = good_token_list.index(arg_text)
+            if arg_idx==None:
+                print('Exception')
+                return False
             argument_role_label[arg_idx] = arg_role
 
         trigger_idx = None
         trigger_type_label = ['*' for i in range(len(good_entity_mark_list))]
         if e_mention['anchor']['text'] in good_token_list:
-            trigger_idx = good_token_list.index(e_mention['anchor']['text'])
+            trigger_idx = [good_token_list.index(e_mention['anchor']['text'])]
         else:
             for idx,tok in enumerate(token_list):
                 if e_mention['anchor']['text'] in tok:
-                    trigger_idx = idx
-        if trigger_idx==None:
-            print(e_mention['anchor']['text'])
-            print(good_token_list)
-        trigger_type_label[trigger_idx] = tmp['TYPE']+'/'+tmp['SUBTYPE']
+                    trigger_idx = [idx]
+        if trigger_idx==None:  # multiple trigger like 'blew him up'
+            triggers = e_mention['anchor']['text'].split()
+            trigger_idx = []
+            for tmp_t in triggers:
+                if tmp_t in token_list: trigger_idx.append(token_list.index(tmp_t))
+                else:
+                    for idx, tok in enumerate(token_list):
+                        if tmp_t in tok:
+                            trigger_idx.append(idx)
+
+        for el in trigger_idx:
+            trigger_type_label[el] = tmp['TYPE']+'/'+tmp['SUBTYPE']
 
         assert len(good_entity_mark_list)==len(good_token_list)==len(trigger_type_label)==len(argument_role_label)
         packed_data['sentence'] = good_token_list
