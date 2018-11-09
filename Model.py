@@ -1,6 +1,7 @@
 import time, datetime, os
 import tensorflow as tf
 from Dataset import Dataset
+import numpy as np
 
 """ 
 Original taken from https://github.com/zhangluoyang/cnn-for-auto-event-extract
@@ -199,7 +200,7 @@ with tf.Graph().as_default():
             accuracy, predicts = sess.run([model.accuracy, model.predicts], feed_dict)
             from sklearn.metrics import classification_report
             print("eval accuracy:{}".format(accuracy))
-            print('input_y :', input_y, ', predicts: ', predicts)
+            print("input_y : ", [np.argmax(item) for item in input_y], ', predicts :', predicts)
             print(classification_report(input_y, predicts, target_names=dataset.all_labels))
             return predicts
 
