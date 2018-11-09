@@ -22,7 +22,7 @@ class Dataset:
     def __init__(self,
                  data_path='',
                  batch_size=5,
-                 max_sequence_length=20,
+                 max_sequence_length=30,
                  windows=3,
                  eval_num=50):
 
@@ -58,6 +58,7 @@ class Dataset:
 
             for word in words: all_words.add(word)
             for mark in marks: all_marks.add(mark)
+            for pos_tag in pos_taggings: all_pos_taggings.add(pos_tag)
             all_labels.add(label)
 
             self.instances.append({
