@@ -65,10 +65,10 @@ class PreprocessManager():
     def packing_sentence(self, e_mention, tmp, sent_pos, entities, valtimexes):
         packed_data = {
             'sentence': [],
-            'label_position':[],  # label position ('T' for trigger, 'A' for argument, '*' for None of them
+            'label_position':[],  # label position ('T' for trigger, 'A' for argument, '*' for None of them)
             'EVENT_TYPE' : tmp['TYPE'],
             'EVENT_SUBTYPE' : tmp['SUBTYPE'],
-            'entity_position' : []
+            'entity_position' : [],
         }
         # Each Entity, value, timex2 overlap check
         assert self.check_entity_overlap(entities, valtimexes)
@@ -77,6 +77,45 @@ class PreprocessManager():
         print()
         pp.pprint(entities)
         pp.pprint(valtimexes)
+
+        idx_list = [0 for i in range(len(e_mention['ldc_scope']['text']))]
+        assert len(idx_list) == (int(e_mention['ldc_scope']['position'][1])-int(e_mention['ldc_scope']['position'][0])+1)
+        sent_start_idx = int(e_mention['ldc_scope']['position'][0])
+
+        for ent in entities:
+            ent_start_idx = int(ent['head']['position'][0])
+            for i in range(int(ent['head']['position'][1]) - int(ent['head']['position'][0]) + 1):
+                if idx_list[ent_start_idx + i - sent_start_idx]==1: raise ValueError('까율~~~~~~~~~~~~~~~~~~')
+                idx_list[ent_start_idx + i - sent_start_idx] = 1  # entity mark
+
+        for val in valtimexes:
+            ent_start_idx = int(val['position'][0])
+            for i in range(int(val['position'][1]) - int(val['position'][0]) + 1):
+                if idx_list[ent_start_idx + i - sent_start_idx]==1: raise ValueError('끼악~~~~~~~~~~~~~~~~~~~~')
+                idx_list[ent_start_idx + i - sent_start_idx] = 1  # entity mark
+
+        token_list = []
+        curr_token = ''
+        print(idx_list)
+        for idx, el in enumerate(e_mention['ldc_scope']['text']):
+            if idx==0:
+                curr_token += el
+                continue
+
+            if idx_list[idx]!=idx_list[idx-1]:
+                token_list.append(curr_token)
+                curr_token = el
+                continue
+
+            curr_token += el
+
+            if idx == len(e_mention['ldc_scope']['text'])-1:
+                token_list.append(curr_token)
+
+        print(e_mention['ldc_scope']['text'])
+        print(token_list)
+
+
 
 
 
