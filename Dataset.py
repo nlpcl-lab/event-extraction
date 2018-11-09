@@ -52,7 +52,10 @@ class Dataset:
         all_words, all_pos_taggings, all_labels, all_marks = [set() for _ in range(4)]
 
         def read_one(words, marks, label):
-            pos_taggings = []
+            import nltk
+            pos_taggings = nltk.pos_tag(words)
+            pos_taggings = [pos_tagging[1] for pos_tagging in pos_taggings]
+
             for word in words: all_words.add(word)
             for mark in marks: all_marks.add(mark)
             all_labels.add(label)
@@ -65,23 +68,30 @@ class Dataset:
             })
 
         # current word: $500 billion
-        read_one(
-            words=['It', 'could', 'swell', 'to', 'as', 'much', 'as', '$500 billion', 'if', 'we', 'go', 'to', 'war', 'in', 'Iraq'],
-            marks=['A', 'A', 'A', 'A', 'A', 'A', 'A', 'B', 'A', 'A', 'A', 'A', 'T', 'A', 'A'],
-            label='None',
-        )
-        # current word: we
-        read_one(
-            words=['It', 'could', 'swell', 'to', 'as', 'much', 'as', '$500 billion', 'if', 'we', 'go', 'to', 'war', 'in', 'Iraq'],
-            marks=['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'B', 'A', 'A', 'T', 'A', 'A'],
-            label='Attacker',
-        )
-        # current word: Iraq
-        read_one(
-            words=['It', 'could', 'swell', 'to', 'as', 'much', 'as', '$500 billion', 'if', 'we', 'go', 'to', 'war', 'in', 'Iraq'],
-            marks=['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'T', 'A', 'B'],
-            label='Place',
-        )
+        # read_one(
+        #     words=['It', 'could', 'swell', 'to', 'as', 'much', 'as', '$500 billion', 'if', 'we', 'go', 'to', 'war', 'in', 'Iraq'],
+        #     marks=['A', 'A', 'A', 'A', 'A', 'A', 'A', 'B', 'A', 'A', 'A', 'A', 'T', 'A', 'A'],
+        #     label='None',
+        # )
+        # # current word: we
+        # read_one(
+        #     words=['It', 'could', 'swell', 'to', 'as', 'much', 'as', '$500 billion', 'if', 'we', 'go', 'to', 'war', 'in', 'Iraq'],
+        #     marks=['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'B', 'A', 'A', 'T', 'A', 'A'],
+        #     label='Attacker',
+        # )
+        # # current word: Iraq
+        # read_one(
+        #     words=['It', 'could', 'swell', 'to', 'as', 'much', 'as', '$500 billion', 'if', 'we', 'go', 'to', 'war', 'in', 'Iraq'],
+        #     marks=['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'T', 'A', 'B'],
+        #     label='Place',
+        # )
+
+        from Preprocess import PreprocessManager
+        man = PreprocessManager()
+        man.preprocess()
+        argument_classification_data = man.arg_task_format_data
+        for data in argument_classification_data:
+            read_one(words=data[0], marks=data[1], label=data[2])
 
         all_words.add('<eos>')
         all_pos_taggings.add('*')
@@ -138,9 +148,10 @@ class Dataset:
             pos_t.append(pos_trigger)
             t.append([index_words[index_triggers[0]]] * self.max_sequence_length)
             c.append([index_words[index_candidates[0]]] * self.max_sequence_length)
+
+            print(len(words), len(marks), len(pos_taggings), len(index_words), len(pos_candidate), len(pos_trigger))
             assert len(words) == len(marks) == len(pos_taggings) == len(index_words) == len(pos_candidate) == len(pos_trigger)
-        assert len(y) == len(x) == len(t) == len(c) == len(pos_c) == len(pos_t) == len(
-            pos_tag)
+        assert len(y) == len(x) == len(t) == len(c) == len(pos_c) == len(pos_t) == len(pos_tag)
         return x, t, c, one_hot(y, len(self.all_labels)), pos_c, pos_t, pos_tag
 
     def eval_data(self):
