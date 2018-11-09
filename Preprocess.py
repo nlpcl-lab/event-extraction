@@ -32,7 +32,6 @@ class PreprocessManager():
         print("END PREPROCESSING")
         print('TOTAL DATA :  {}'.format(len(self.dataset)))
         self.foramt_to_argument()
-        pp.pprint(self.arg_task_format_data[0])
 
     def foramt_to_argument(self):
         for d in self.dataset:
@@ -391,3 +390,8 @@ class PreprocessManager():
 if __name__ == '__main__':
     man = PreprocessManager()
     man.preprocess()
+
+    # Example
+    argument_classification_data = man.arg_task_format_data
+    print('\n\n')
+    pp.pprint(argument_classification_data[0])
