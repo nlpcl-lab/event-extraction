@@ -47,30 +47,97 @@ class PreprocessManager():
                 sent_pos = [int(i) for i in e_mention['ldc_scope']['position']]
                 entities_in_sent = self.search_entity_in_sentence(entities, sent_pos)
                 val_timexs_in_sent = self.search_valtimex_in_sentence(val_timexs, sent_pos)
+                e_mention = self.get_argument_head(entities_in_sent, e_mention)
                 final_data = self.packing_sentence(e_mention, tmp, sent_pos, entities_in_sent, val_timexs_in_sent)
-                print('raw_sent :   {}'.format(tmp['raw_sent']))
-                print(e_mention['anchor'])
-                print(sent_pos)
-                for e in entities_in_sent:
-                    print(e)
-                print(val_timexs_in_sent)
+
                 input()
 
+    @staticmethod
+    def get_argument_head(entities, e_mention):
+        for idx, arg in enumerate(e_mention['argument']):
+            arg_refID = arg['REFID']
+            for entity in entities:
+                if entity['ID'] == arg_refID:
+                    e_mention['argument'][idx]['position_head'] = entity['head']['position']
+                    e_mention['argument'][idx]['text_head'] = entity['head']['text']
+        return e_mention
+
     def packing_sentence(self, e_mention, tmp, sent_pos, entities, valtimexes):
-        # TODO : argument가 extent니깐, entity ID 가지고 entity head 가져온 다음에 그 head만 argument로 마크하기 
-        
         packed_data = {
             'sentence': [],
-            'label_position':[],  # label position ('T' for trigger, 'A' for argument, '*' for None of them
+            'label_position':[],  # label position ('T' for trigger, 'A' for argument, '*' for None of them)
             'EVENT_TYPE' : tmp['TYPE'],
             'EVENT_SUBTYPE' : tmp['SUBTYPE'],
-            'entity_position' : []
+            'entity_position' : [],
         }
+        # Each Entity, value, timex2 overlap check
+        assert self.check_entity_overlap(entities, valtimexes)
+
+        pp.pprint(e_mention)
+
+        idx_list = [0 for i in range(len(e_mention['ldc_scope']['text']))]
+        assert len(idx_list) == (int(e_mention['ldc_scope']['position'][1])-int(e_mention['ldc_scope']['position'][0])+1)
+        sent_start_idx = int(e_mention['ldc_scope']['position'][0])
+
+        for ent in entities:
+            ent_start_idx = int(ent['head']['position'][0])
+            for i in range(int(ent['head']['position'][1]) - int(ent['head']['position'][0]) + 1):
+                if idx_list[ent_start_idx + i - sent_start_idx]==1: raise ValueError('까율~~~~~~~~~~~~~~~~~~')
+                idx_list[ent_start_idx + i - sent_start_idx] = 1  # entity mark
+
+        for val in valtimexes:
+            ent_start_idx = int(val['position'][0])
+            for i in range(int(val['position'][1]) - int(val['position'][0]) + 1):
+                if idx_list[ent_start_idx + i - sent_start_idx]==1: raise ValueError('끼악~~~~~~~~~~~~~~~~~~~~')
+                idx_list[ent_start_idx + i - sent_start_idx] = 1  # entity mark
+
+        token_list = []
+        entity_mark_list = []
+        curr_token = ''
+        for idx, el in enumerate(e_mention['ldc_scope']['text']):
+            if idx==0:
+                curr_token += el
+                continue
+            if idx_list[idx]!=idx_list[idx-1]:
+                if idx_list[idx-1]==1: entity_mark_list.append('E')
+                else: entity_mark_list.append('N')
+                token_list.append(curr_token)
+                curr_token = el
+                continue
+            curr_token += el
+            if idx == len(e_mention['ldc_scope']['text'])-1:
+                if idx_list[idx]==1: entity_mark_list.append('E')
+                else: entity_mark_list.append('N')
+                token_list.append(curr_token)
+
+        print(e_mention['ldc_scope']['text'])
+        print(token_list)
+        print(entity_mark_list)
+        assert len(token_list)==len(entity_mark_list)
+
+        good_token_list = []  # TODO: The better name....
+        good_entity_mark_list = []
+
+        for tok, mark in zip(token_list, entity_mark_list):
+            if mark == 'N':
+                splitted_tok = tok.split()
+
+
+
+
 
 
     @staticmethod
+    def check_entity_overlap(entities, valtimexes):
+        ranges = []
+        # TODO: Implement this later
+        for ent in entities:
+            ranges.append(None)
+        return True
+
+    @staticmethod
     def search_entity_in_sentence(entities, sent_pos):
-        headVSextent = 'head' #'extent'
+        headVSextent = 'head'
         entities_in_sent = list()
         check = dict()
         for entity in entities:
