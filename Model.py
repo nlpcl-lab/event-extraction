@@ -105,7 +105,7 @@ class Model():
         # The overall classifier goes through a layer of dropout and then into softmax
         with tf.device('/cpu:0'), tf.name_scope('dropout'):
             all_fatures = tf.nn.dropout(all_input_features, dropout_keep_prob)
-        # print all_fatures
+        # print all_features
         # Classifier
         with tf.device('/cpu:0'), tf.name_scope('softmax'):
             W = tf.Variable(tf.truncated_normal([num_filters_total + sentence_length * word_embedding_size, num_labels], stddev=0.1), name="W")
@@ -130,8 +130,8 @@ class Model():
 
 file = 'ace2005.txt'
 store_path = "ace_data.txt"
-data_batch_size = 20
-max_sequence_length = 30
+data_batch_size = 10
+max_sequence_length = 50
 windows = 3  # The size of the selected context window
 dataset = Dataset(batch_size=data_batch_size, max_sequence_length=max_sequence_length, windows=windows)
 
@@ -173,7 +173,7 @@ with tf.Graph().as_default():
         sess.run(tf.initialize_all_variables())
 
 
-        def train_step(input_x, input_y, input_t, input_c, input_t_pos, input_c_pos, dropout_keep_prob, sentence_features, input_t_context, input_c_context):
+        def train_step(input_x, input_y, input_t, input_c, input_t_pos, input_c_pos, dropout_keep_prob):
             feed_dict = {
                 model.input_x: input_x,
                 model.input_y: input_y,
@@ -182,9 +182,6 @@ with tf.Graph().as_default():
                 model.input_t_pos: input_t_pos,
                 model.input_c_pos: input_c_pos,
                 model.dropout_keep_prob: dropout_keep_prob,
-                # model.sentence_features : sentence_features,
-                # model.input_t_context:input_t_context,
-                # model.input_c_context:input_c_context
             }
             _, loss, accuracy = sess.run(
                 [train_op, model.loss, model.accuracy],
