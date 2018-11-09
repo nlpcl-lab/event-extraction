@@ -393,5 +393,14 @@ if __name__ == '__main__':
 
     # Example
     argument_classification_data = man.arg_task_format_data
-    print('\n\n')
-    print(argument_classification_data[0])
+    # print('\n\n')
+    # print(argument_classification_data[0])
+
+    all_labels = set()
+    total = 0
+    for data in argument_classification_data:
+        total += 1
+        all_labels.add(data[2])
+
+    print('total :', total)
+    print('label len:', len(all_labels))
