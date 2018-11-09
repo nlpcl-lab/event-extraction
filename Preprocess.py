@@ -75,6 +75,9 @@ class PreprocessManager():
 
         pp.pprint(e_mention)
 
+        pp.pprint(entities)
+        pp.pprint(valtimexes)
+
         idx_list = [0 for i in range(len(e_mention['ldc_scope']['text']))]
         assert len(idx_list) == (int(e_mention['ldc_scope']['position'][1])-int(e_mention['ldc_scope']['position'][0])+1)
         sent_start_idx = int(e_mention['ldc_scope']['position'][0])
@@ -101,14 +104,14 @@ class PreprocessManager():
                 continue
             if idx_list[idx]!=idx_list[idx-1]:
                 if idx_list[idx-1]==1: entity_mark_list.append('E')
-                else: entity_mark_list.append('N')
+                else: entity_mark_list.append('*')
                 token_list.append(curr_token)
                 curr_token = el
                 continue
             curr_token += el
             if idx == len(e_mention['ldc_scope']['text'])-1:
                 if idx_list[idx]==1: entity_mark_list.append('E')
-                else: entity_mark_list.append('N')
+                else: entity_mark_list.append('*')
                 token_list.append(curr_token)
 
         assert len(token_list)==len(entity_mark_list)
@@ -117,10 +120,10 @@ class PreprocessManager():
         good_entity_mark_list = []
 
         for tok, mark in zip(token_list, entity_mark_list):
-            if mark == 'N':
+            if mark == '*':
                 splitted_tok = tok.split()
                 good_token_list += splitted_tok
-                good_entity_mark_list += ['N' for i in range(len(splitted_tok))]
+                good_entity_mark_list += ['*' for i in range(len(splitted_tok))]
             if mark == 'E':
                 good_token_list.append(tok.strip())
                 good_entity_mark_list.append('E')
