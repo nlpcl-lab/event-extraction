@@ -49,12 +49,17 @@ class PreprocessManager():
                 val_timexs_in_sent = self.search_valtimex_in_sentence(val_timexs, sent_pos)
                 final_data = self.packing_sentence(e_mention, tmp, sent_pos, entities_in_sent, val_timexs_in_sent)
                 print('raw_sent :   {}'.format(tmp['raw_sent']))
-                print(e_mention['anchor'])
+                pp.pprint(e_mention)
+                print()
                 print(sent_pos)
                 for e in entities_in_sent:
                     print(e)
                 print(val_timexs_in_sent)
                 input()
+
+    def get_argument_head(self, entities, e_mention):
+        pass
+
 
     def packing_sentence(self, e_mention, tmp, sent_pos, entities, valtimexes):
         # TODO : argument가 extent니깐, entity ID 가지고 entity head 가져온 다음에 그 head만 argument로 마크하기 
@@ -70,7 +75,7 @@ class PreprocessManager():
 
     @staticmethod
     def search_entity_in_sentence(entities, sent_pos):
-        headVSextent = 'head' #'extent'
+        headVSextent = 'head'
         entities_in_sent = list()
         check = dict()
         for entity in entities:
