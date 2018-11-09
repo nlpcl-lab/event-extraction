@@ -13,7 +13,9 @@ class PreprocessManager():
     def __init__(self):
         self.dir_list = MyConfig.raw_dir_list
         self.dir_path = MyConfig.raw_data_path
+        self.dataset = []
         self.vocab, self.all_labels_event, self.all_labels_role = [set() for i in range(3)]
+        print(len(self.dataset))
 
     def preprocess(self):
         '''
@@ -23,10 +25,10 @@ class PreprocessManager():
         total_res = []
         for fname in fnames:
             total_res.append(self.process_one_file(fname))
-        dataset = []
         for doc in total_res:
-            dataset.append(self.process_sentencewise(doc))
-        instance =
+            self.dataset.append(self.process_sentencewise(doc))
+        print("END PREPROCESSING")
+        print(len(self.dataset))
 
 
     def process_sentencewise(self, doc):
@@ -131,7 +133,7 @@ class PreprocessManager():
                 arg_idx = good_token_list.index(arg_text)
             argument_role_label[arg_idx] = arg_role
 
-
+        trigger_idx = None
         trigger_type_label = ['*' for i in range(len(good_entity_mark_list))]
         if e_mention['anchor']['text'] in good_token_list:
             trigger_idx = good_token_list.index(e_mention['anchor']['text'])
@@ -139,6 +141,9 @@ class PreprocessManager():
             for idx,tok in enumerate(token_list):
                 if e_mention['anchor']['text'] in tok:
                     trigger_idx = idx
+        if trigger_idx==None:
+            print(e_mention['anchor']['text'])
+            print(good_token_list)
         trigger_type_label[trigger_idx] = tmp['TYPE']+'/'+tmp['SUBTYPE']
 
         assert len(good_entity_mark_list)==len(good_token_list)==len(trigger_type_label)==len(argument_role_label)
@@ -166,7 +171,8 @@ class PreprocessManager():
                 if sent_pos[0] <= int(mention[headVSextent]['position'][0]) and int(mention[headVSextent]['position'][1]) <= sent_pos[1]:
                     if mention[headVSextent]['position'][0] in check:  # duplicate entity in one word.
                         print('으악!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-                        raise ValueError
+                        #raise ValueError
+                        continue
                     check[mention[headVSextent]['position'][0]] = 1
                     entities_in_sent.append(mention)
         return entities_in_sent
