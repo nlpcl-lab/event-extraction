@@ -31,12 +31,21 @@ class PreprocessManager():
             self.dataset += self.process_sentencewise(doc)
         print("END PREPROCESSING")
         print('TOTAL DATA :  {}'.format(len(self.dataset)))
-        self.foramt_to_argument()
+        self.format_to_trigger()
+        self.format_to_argument()
 
-    def foramt_to_argument(self):
+    def format_to_argument(self):
         for d in self.dataset:
             generated_candi = self.generate_argument_candidate_pos_list(d['argument_position'], d['entity_position'],
                                                                         d['trigger_position'])
+            # TODO: get SeunWon's variable and change 100.
+            if len(d['sentence'])>100:continue
+
+            trigger_cnt = 0
+            for m in d['trigger_position']:
+                if m=='T':trigger_cnt+=1
+            if trigger_cnt>1:continue
+
             for candi in generated_candi:
                 self.arg_task_format_data.append([d['sentence']]+candi)
 
@@ -59,6 +68,27 @@ class PreprocessManager():
             for i in tri_idx_list:
                 marks[i]='T'
             label = None if arg_pos[idx]=='*' else arg_pos[idx]
+            cand_list.append([marks,label])
+        return cand_list
+
+    def format_to_trigger(self):
+        for d in self.dataset:
+            generated_candi = self.generate_trigger_candidate_pos_list(d['trigger_position'])
+            for candi in generated_candi:
+                self.tri_task_format_data.append([d['sentence']]+candi)
+
+    def generate_trigger_candidate_pos_list(self, trigger_pos):
+        cand_list = []
+        idx_list = []
+        for idx,el in enumerate(trigger_pos):
+            if el!='*': idx_list.append((idx,el))
+
+        for idx in range(len(trigger_pos)):
+            marks = ['A' for i in range(len(trigger_pos))]
+            marks[idx]='B'
+            label = None
+            for i in idx_list:
+                if idx == i[0]: label = i[1]
             cand_list.append([marks,label])
         return cand_list
 
