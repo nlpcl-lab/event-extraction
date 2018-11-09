@@ -9,12 +9,11 @@ def find_candidates(items1, items2):
     return result
 
 
-def one_hot(labels, label_num):
-    print('one_hot labels :', labels, ', label_num :', label_num)
+def one_hot(labels, label_id, label_num):
     result = []
-    for label in enumerate(labels):
+    for i in range(0, len(labels)):
         one_hot_vec = [0] * label_num
-        one_hot_vec[label[0]] = 1
+        one_hot_vec[label_id[labels[i]]] = 1
         result.append(one_hot_vec)
     return result
 
@@ -41,6 +40,7 @@ class Dataset:
         self.word_id = dict()
         self.pos_taggings_id = dict()
         self.mark_id = dict()
+        self.label_id = dict()
 
         self.read_dataset()
         self.eval_instances = self.instances[-eval_num:]
@@ -105,6 +105,7 @@ class Dataset:
         self.word_id = dict(zip(all_words, range(len(all_words))))
         self.pos_taggings_id = dict(zip(all_pos_taggings, range(len(all_pos_taggings))))
         self.mark_id = dict(zip(all_marks, range(len(all_marks))))
+        self.label_id = dict(zip(all_labels, range(len(all_labels))))
 
         self.all_words = list(all_words)
         self.all_pos_taggings = list(all_pos_taggings)
@@ -158,7 +159,7 @@ class Dataset:
             # print(len(words), len(marks), len(pos_taggings), len(index_words), len(pos_candidate), len(pos_trigger))
             assert len(words) == len(marks) == len(pos_taggings) == len(index_words) == len(pos_candidate) == len(pos_trigger)
         assert len(y) == len(x) == len(t) == len(c) == len(pos_c) == len(pos_t) == len(pos_tag)
-        return x, t, c, one_hot(y, len(self.all_labels)), pos_c, pos_t, pos_tag
+        return x, t, c, one_hot(y, self.label_id, len(self.all_labels)), pos_c, pos_t, pos_tag
 
     def eval_data(self):
         batch_instances = self.eval_instances
@@ -189,4 +190,4 @@ class Dataset:
             assert len(words) == len(marks) == len(pos_taggings) == len(index_words) == len(pos_candidate) == len(pos_trigger)
         assert len(y) == len(x) == len(t) == len(c) == len(pos_c) == len(pos_t) == len(
             pos_tag)
-        return x, t, c, one_hot(y, len(self.all_labels)), pos_c, pos_t, pos_tag
+        return x, t, c, one_hot(y, self.label_id, len(self.all_labels)), pos_c, pos_t, pos_tag

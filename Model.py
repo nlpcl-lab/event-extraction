@@ -47,9 +47,9 @@ class Model():
         self.dropout_keep_prob = dropout_keep_prob
         with tf.device('/cpu:0'), tf.name_scope("word_embedding_layer"):
             # [vocab_size, embedding_size]
-            W = tf.Variable(tf.random_normal(shape=[vocab_size, word_embedding_size], mean=0.0, stddev=0.5), name="word_table")
+            W_text = tf.Variable(tf.random_normal(shape=[vocab_size, word_embedding_size], mean=0.0, stddev=0.5), name="word_table")
 
-            input_word_vec = tf.nn.embedding_lookup(W, input_x)
+            input_word_vec = tf.nn.embedding_lookup(W_text, input_x)
             input_t_pos_t = input_t_pos + (sentence_length - 1)
             Tri_pos = tf.Variable(
                 tf.random_normal(shape=[2 * (sentence_length - 1) + 1, pos_embedding_size], mean=0.0, stddev=0.5),
@@ -208,16 +208,16 @@ with tf.Graph().as_default():
             print("eval accuracy:{}".format(accuracy))
             return predicts
 
-        # for i in range(num_epochs):
-        #     for j in range(len(dataset.train_instances) // data_batch_size):
-        #         x, t, c, y, pos_c, pos_t, _ = dataset.next_train_data()
-        #         train_step(input_x=x,
-        #                    input_y=y,
-        #                    input_t=t,
-        #                    input_c=c,
-        #                    input_c_pos=pos_c,
-        #                    input_t_pos=pos_t,
-        #                    dropout_keep_prob=0.8)
+        for i in range(num_epochs):
+            for j in range(len(dataset.train_instances) // data_batch_size):
+                x, t, c, y, pos_c, pos_t, _ = dataset.next_train_data()
+                train_step(input_x=x,
+                           input_y=y,
+                           input_t=t,
+                           input_c=c,
+                           input_c_pos=pos_c,
+                           input_t_pos=pos_t,
+                           dropout_keep_prob=0.8)
 
         print("-------------------------------------------------------------------------")
         x, t, c, y, pos_c, pos_t, _ = dataset.eval_data()
