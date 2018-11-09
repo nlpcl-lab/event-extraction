@@ -51,10 +51,20 @@ class Dataset:
     def read_dataset(self):
         all_words, all_pos_taggings, all_labels, all_marks = [set() for _ in range(4)]
 
-        instances, words, marks, label = [list() for _ in range(4)]
+        def read_one_sentence(words, marks, labels):
+            pos_taggings = []
+            for word in words: all_words.add(word)
+            for mark in marks: all_marks.add(mark)
+            for label in labels: all_labels.add(label)
 
-        # data_model = namedtuple(('data'), ['words', 'pos_taggings', 'marks', 'label'])
-        # instances.append(data_model(words=words, pos_taggings=pos_taggings, marks=marks, label=label))
+            self.instances.append({
+                'words': words,
+                'pos_taggings': pos_taggings,
+                'marks': marks,
+                'labels': labels,
+            })
+
+        read_one_sentence(words=[], marks=[], labels=[])
 
         all_words.add('<eos>')
         all_pos_taggings.add('*')
