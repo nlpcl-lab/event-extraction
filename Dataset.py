@@ -61,6 +61,10 @@ class Dataset:
             for pos_tag in pos_taggings: all_pos_taggings.add(pos_tag)
             all_labels.add(label)
 
+            if len(words) > 80:
+                print('len(word) > 80 !!!! ', len(words), words)
+                return
+
             self.instances.append({
                 'words': words,
                 'pos_taggings': pos_taggings,
@@ -134,7 +138,7 @@ class Dataset:
             index_candidates = find_candidates(marks, ['B'])
             assert (len(index_candidates)) == 1
             index_triggers = find_candidates(marks, ['T'])
-            assert (len(index_triggers)) == 1
+            # assert (len(index_triggers)) == 1
             y.append(label)
             marks = marks + ['A'] * (self.max_sequence_length - len(marks))
             words = words + ['<eos>'] * (self.max_sequence_length - len(words))
@@ -166,7 +170,7 @@ class Dataset:
             index_candidates = find_candidates(marks, ['B'])
             assert (len(index_candidates)) == 1
             index_triggers = find_candidates(marks, ['T'])
-            assert (len(index_triggers)) == 1
+            # assert (len(index_triggers)) == 1
             y.append(label)
             marks = marks + ['A'] * (self.max_sequence_length - len(marks))
             words = words + ['<eos>'] * (self.max_sequence_length - len(words))

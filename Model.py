@@ -131,7 +131,7 @@ class Model():
 file = 'ace2005.txt'
 store_path = "ace_data.txt"
 data_batch_size = 10
-max_sequence_length = 100
+max_sequence_length = 80
 windows = 3  # The size of the selected context window
 dataset = Dataset(batch_size=data_batch_size, max_sequence_length=max_sequence_length, windows=windows)
 
