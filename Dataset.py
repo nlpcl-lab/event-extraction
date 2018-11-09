@@ -64,7 +64,11 @@ class Dataset:
                 'labels': labels,
             })
 
-        read_one_sentence(words=[], marks=[], labels=[])
+        read_one_sentence(
+            words=['It', 'could', 'swell', 'to', 'as', 'much', 'as', '$500 billion', 'if', 'we', 'go', 'to', 'war', 'in', 'Iraq'],
+            marks=['A',  'A',     'A',     'A',  'A',  'A',    'A',  'B',            'A',  'B',  'A',  'A',  'T',   'A',  'B'],
+            labels=['',  '',      '',      '',   '',   '',     '',   '',           '', 'Attacker','',  '', 'Conflict/Attack', '', 'Place'],
+        )
 
         all_words.add('<eos>')
         all_pos_taggings.add('*')
