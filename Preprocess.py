@@ -32,9 +32,9 @@ class PreprocessManager():
         print("END PREPROCESSING")
         print('TOTAL DATA :  {}'.format(len(self.dataset)))
         self.format_to_trigger()
-        self.foramt_to_argument()
+        self.format_to_argument()
 
-    def foramt_to_argument(self):
+    def format_to_argument(self):
         for d in self.dataset:
             generated_candi = self.generate_argument_candidate_pos_list(d['argument_position'], d['entity_position'],
                                                                         d['trigger_position'])
@@ -423,5 +423,5 @@ if __name__ == '__main__':
 
     # Example
     argument_classification_data = man.arg_task_format_data
-    print('\n\n')
     print(argument_classification_data[0])
+
