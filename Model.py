@@ -137,8 +137,8 @@ dataset = Dataset(batch_size=data_batch_size, max_sequence_length=max_sequence_l
 
 # parameters of the neural network model
 sentence_length = max_sequence_length
-num_labels = dataset.labels_size
-vocab_size = dataset.words_size
+num_labels = len(dataset.all_labels)
+vocab_size = len(dataset.all_words)
 word_embedding_size = 100
 pos_embedding_size = 10
 filter_sizes = [3, 4, 5]
@@ -214,7 +214,7 @@ with tf.Graph().as_default():
 
         # sentences_features, c_context, t_context, pos_tag
         for i in range(num_epochs):
-            for j in range(dataset.instances_size // data_batch_size):
+            for j in range(len(dataset.train_instances) // data_batch_size):
                 x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = dataset.next_train_data()
                 train_step(input_x=x,
                            input_y=y,
@@ -228,21 +228,21 @@ with tf.Graph().as_default():
                            input_c_context=c_context)
 
         print("-------------------------------------------------------------------------")
-        x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = dataset.eval_data()
-        predicts = eval_step(input_x=x,
-                             input_y=y,
-                             input_t=t,
-                             input_c=c,
-                             input_c_pos=pos_c,
-                             input_t_pos=pos_t,
-                             dropout_keep_prob=1.0,
-                             sentence_features=sentences_f,
-                             input_t_context=t_context,
-                             input_c_context=c_context)
-        # test results
-        for i in range(len(x)):
-            print("Input data：{}".format(", ".join(map(lambda h: dataset.all_words[h], x[i]))))
-            print("Trigger word：{}".format(", ".join(map(lambda h: dataset.all_words[h], t[i]))))
-            print("Candidate：{}".format(", ".join(map(lambda h: dataset.all_words[h], c[i]))))
-            print("Prediction:{}".format(predicts[i]))
-            print("-------------------------------------------------------------------------")
+        # x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = dataset.eval_data()
+        # predicts = eval_step(input_x=x,
+        #                      input_y=y,
+        #                      input_t=t,
+        #                      input_c=c,
+        #                      input_c_pos=pos_c,
+        #                      input_t_pos=pos_t,
+        #                      dropout_keep_prob=1.0,
+        #                      sentence_features=sentences_f,
+        #                      input_t_context=t_context,
+        #                      input_c_context=c_context)
+        # # test results
+        # for i in range(len(x)):
+        #     print("Input data：{}".format(", ".join(map(lambda h: dataset.all_words[h], x[i]))))
+        #     print("Trigger word：{}".format(", ".join(map(lambda h: dataset.all_words[h], t[i]))))
+        #     print("Candidate：{}".format(", ".join(map(lambda h: dataset.all_words[h], c[i]))))
+        #     print("Prediction:{}".format(predicts[i]))
+        #     print("-------------------------------------------------------------------------")
