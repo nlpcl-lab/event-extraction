@@ -19,19 +19,19 @@ class PreprocessManager():
         '''
         Overall Iterator for whole dataset
         '''
-        fnames = self.fname_search()  # list of tuple (sgm file, apf.xml file)
+        fnames = self.fname_search()
         total_res = []
         for fname in fnames:
             total_res.append(self.process_one_file(fname))
         dataset = []
         for doc in total_res:
             dataset.append(self.process_sentencewise(doc))
+        instance =
 
-        # TODO: save as json file
 
     def process_sentencewise(self, doc):
         entities, val_timexs, events = doc
-
+        datas = []
         for event in events:
             for e_mention in event['event_mention']:
                 tmp = {'TYPE': event['TYPE'], 'SUBTYPE': event['SUBTYPE']}
@@ -40,8 +40,8 @@ class PreprocessManager():
                 entities_in_sent = self.search_entity_in_sentence(entities, sent_pos)
                 val_timexs_in_sent = self.search_valtimex_in_sentence(val_timexs, sent_pos)
                 e_mention = self.get_argument_head(entities_in_sent, e_mention)
-                final_data = self.packing_sentence(e_mention, tmp, sent_pos, entities_in_sent, val_timexs_in_sent)
-
+                datas.append(self.packing_sentence(e_mention, tmp, sent_pos, entities_in_sent, val_timexs_in_sent))
+        return datas
 
     @staticmethod
     def get_argument_head(entities, e_mention):
@@ -56,7 +56,6 @@ class PreprocessManager():
     def packing_sentence(self, e_mention, tmp, sent_pos, entities, valtimexes):
         packed_data = {
             'sentence': [],
-            'label_position':[],  # label position ('T' for trigger, 'A' for argument, '*' for None of them)
             'EVENT_TYPE' : tmp['TYPE'],
             'EVENT_SUBTYPE' : tmp['SUBTYPE'],
             'entity_position' : [],
@@ -104,9 +103,6 @@ class PreprocessManager():
         good_token_list = []  # TODO: The better name....
         good_entity_mark_list = []
 
-        # print(token_list)
-        # print(entity_mark_list)
-
         for tok, mark in zip(token_list, entity_mark_list):
             if mark == '*':
                 splitted_tok = tok.split()
@@ -145,13 +141,12 @@ class PreprocessManager():
                     trigger_idx = idx
         trigger_type_label[trigger_idx] = tmp['TYPE']+'/'+tmp['SUBTYPE']
 
-        print('SENT :   {}'.format(e_mention['ldc_scope']['text']))
-        print('TOKEN LIST :  {}'.format(good_token_list))
-        print('ENTITY MARK :  {}'.format(good_entity_mark_list))
-        print('TRIGGER MARK :   {}'.format(trigger_type_label))
-        print('ARGUMENT MARK :   {}'.format(argument_role_label))
-        print('\n\n')
-
+        assert len(good_entity_mark_list)==len(good_token_list)==len(trigger_type_label)==len(argument_role_label)
+        packed_data['sentence'] = good_token_list
+        packed_data['trigger_position'] = trigger_type_label
+        packed_data['entity_position'] = good_entity_mark_list
+        packed_data['argument_position'] = argument_role_label
+        return packed_data
 
     @staticmethod
     def check_entity_overlap(entities, valtimexes):
