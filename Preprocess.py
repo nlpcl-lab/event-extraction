@@ -39,7 +39,13 @@ class PreprocessManager():
             generated_candi = self.generate_argument_candidate_pos_list(d['argument_position'], d['entity_position'],
                                                                         d['trigger_position'])
             # TODO: get SeunWon's variable and change 100.
-            if d['sentence']>100:continue
+            if len(d['sentence'])>100:continue
+
+            trigger_cnt = 0
+            for m in d['trigger_position']:
+                if m=='T':trigger_cnt+=1
+            if trigger_cnt>1:continue
+
             for candi in generated_candi:
                 self.arg_task_format_data.append([d['sentence']]+candi)
 
@@ -67,7 +73,7 @@ class PreprocessManager():
 
     def format_to_trigger(self):
         for d in self.dataset:
-            generated_candi = self.generate_argument_candidate_pos_list(d['trigger_position'])
+            generated_candi = self.generate_trigger_candidate_pos_list(d['trigger_position'])
             for candi in generated_candi:
                 self.tri_task_format_data.append([d['sentence']]+candi)
 
