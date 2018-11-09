@@ -1,5 +1,5 @@
 import numpy as np
-from collections import namedtuple
+
 
 def find_candidates(items1, items2):
     result = []
@@ -7,6 +7,7 @@ def find_candidates(items1, items2):
         if items1[i] in items2:
             result.append(i)
     return result
+
 
 def one_hot(labels, label_num):
     result = []
@@ -16,6 +17,7 @@ def one_hot(labels, label_num):
         result.append(one_hot_vec)
     return result
 
+
 class Dataset:
     def __init__(self,
                  data_path='',
@@ -23,54 +25,48 @@ class Dataset:
                  max_sequence_length=20,
                  windows=3,
                  eval_num=50):
+
+        self.windows = windows
+        self.batch_size = batch_size
+        self.max_sequence_length = max_sequence_length
+        self.eval_num = eval_num
+
+        self.all_words = list()
+        self.all_pos_taggings = list()
+        self.all_marks = list()
+        self.all_labels = list()
+        self.instances = list()
+
+        self.word_id = dict()
+        self.pos_taggings_id = dict()
+        self.mark_id = dict()
+
+        self.read_dataset()
+        self.eval_instances = self.instances[-eval_num:]
+        self.train_instances = self.instances[0:-eval_num]
+        self.batch_nums = len(self.train_instances) // self.batch_size
+        self.index = np.arange(len(self.train_instances))
+        self.point = 0
+
+    def read_dataset(self):
         all_words, all_pos_taggings, all_labels, all_marks = [set() for _ in range(4)]
 
-        instances = []
-        words = []
-        marks = []
-        label = []
+        instances, words, marks, label = [list() for _ in range(4)]
 
         # data_model = namedtuple(('data'), ['words', 'pos_taggings', 'marks', 'label'])
         # instances.append(data_model(words=words, pos_taggings=pos_taggings, marks=marks, label=label))
 
         all_words.add('<eos>')
         all_pos_taggings.add('*')
-        words_size = len(all_words)
-        word_id = dict(zip(all_words, range(words_size)))
-        pos_taggings_size = len(all_pos_taggings)
-        pos_taggings_id = dict(zip(all_pos_taggings, range(pos_taggings_size)))
 
-        labels_size = len(all_labels)
-        mark_size = len(all_marks)
-        mark_id = dict(zip(all_marks, range(mark_size)))
-
-        self.windows = windows
-        self.batch_size = batch_size
-        self.max_sequence_length = max_sequence_length
+        self.word_id = dict(zip(all_words, range(len(all_words))))
+        self.pos_taggings_id = dict(zip(all_pos_taggings, range(len(all_pos_taggings))))
+        self.mark_id = dict(zip(all_marks, range(len(all_marks))))
 
         self.all_words = list(all_words)
         self.all_pos_taggings = list(all_pos_taggings)
-        self.all_marks = list(all_marks)
         self.all_labels = list(all_labels)
-
-        self.words_size = words_size
-        self.pos_taggings_size = pos_taggings_size
-        self.labels_size = labels_size
-        self.mark_size = mark_size
-
-        self.word_id = word_id
-        self.pos_taggings_id = pos_taggings_id
-        self.mark_id = mark_id
-
-        self.eval_num = eval_num
-        self.eval_instances = instances[-eval_num:]
-
-        instances = instances[0:-eval_num]
-        self.instances_size = len(instances)
-        self.instances = instances
-        self.batch_nums = self.instances_size // self.batch_size
-        self.index = np.arange(self.instances_size)
-        self.point = 0
+        self.all_marks = list(all_marks)
 
     def shuffle(self):
         np.random.shuffle(self.index)
@@ -79,12 +75,12 @@ class Dataset:
     def next_batch(self):
         start = self.point
         self.point = self.point + self.batch_size
-        if self.point > self.instances_size:
+        if self.point > len(self.train_instances):
             self.shuffle()
             start = 0
             self.point = self.point + self.batch_size
         end = self.point
-        batch_instances = map(lambda x: self.instances[x], self.index[start:end])
+        batch_instances = map(lambda x: self.train_instances[x], self.index[start:end])
         return batch_instances
 
     def next_train_data(self):
