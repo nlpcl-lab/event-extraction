@@ -10,6 +10,7 @@ def find_candidates(items1, items2):
 
 
 def one_hot(labels, label_num):
+    print('one_hot labels :', labels, ', label_num :', label_num)
     result = []
     for label in enumerate(labels):
         one_hot_vec = [0] * label_num
@@ -62,7 +63,7 @@ class Dataset:
             all_labels.add(label)
 
             if len(words) > 80:
-                print('len(word) > 80 !!!! ', len(words), words)
+                print('len(word) > 80, Goodbye! ', len(words), words)
                 return
 
             self.instances.append({

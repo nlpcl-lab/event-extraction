@@ -66,7 +66,7 @@ class Model():
             # [batch_size, sentence_length, word_embedding_size+2*pos_size]
             input_sentence_vec = tf.concat(2, [input_word_vec, input_t_pos_vec, input_c_pos_vec])
             # CNN supports 4d input, so increase the one-dimensional vector to indicate the number of input channels.
-            intput_sentence_vec_expanded = tf.expand_dims(input_sentence_vec, -1)
+            input_sentence_vec_expanded = tf.expand_dims(input_sentence_vec, -1)
         pooled_outputs = []
         for i, filter_size in enumerate(filter_sizes):
             with tf.device('/cpu:0'), tf.name_scope('conv-maxpool-%s' % filter_size):
@@ -76,7 +76,7 @@ class Model():
                 b = tf.Variable(tf.constant(0.1, shape=[filter_num]), name="b")
                 # Convolution operation
                 conv = tf.nn.conv2d(
-                    intput_sentence_vec_expanded,
+                    input_sentence_vec_expanded,
                     W,
                     strides=[1, 1, 1, 1],
                     padding="VALID",
@@ -104,13 +104,13 @@ class Model():
         all_input_features = tf.concat(1, [lexical_vec, h_pool_flat])
         # The overall classifier goes through a layer of dropout and then into softmax
         with tf.device('/cpu:0'), tf.name_scope('dropout'):
-            all_fatures = tf.nn.dropout(all_input_features, dropout_keep_prob)
+            all_features = tf.nn.dropout(all_input_features, dropout_keep_prob)
         # print all_features
         # Classifier
         with tf.device('/cpu:0'), tf.name_scope('softmax'):
             W = tf.Variable(tf.truncated_normal([num_filters_total + sentence_length * word_embedding_size, num_labels], stddev=0.1), name="W")
             b = tf.Variable(tf.constant(0.1, shape=[num_labels]), name="b")
-            scores = tf.nn.xw_plus_b(all_fatures, W, b, name="scores")
+            scores = tf.nn.xw_plus_b(all_features, W, b, name="scores")
             predicts = tf.arg_max(scores, dimension=1, name="predicts")
             self.scores = scores
             self.predicts = predicts
@@ -208,18 +208,16 @@ with tf.Graph().as_default():
             print("eval accuracy:{}".format(accuracy))
             return predicts
 
-
-        # sentences_features, c_context, t_context, pos_tag
-        for i in range(num_epochs):
-            for j in range(len(dataset.train_instances) // data_batch_size):
-                x, t, c, y, pos_c, pos_t, _ = dataset.next_train_data()
-                train_step(input_x=x,
-                           input_y=y,
-                           input_t=t,
-                           input_c=c,
-                           input_c_pos=pos_c,
-                           input_t_pos=pos_t,
-                           dropout_keep_prob=0.8)
+        # for i in range(num_epochs):
+        #     for j in range(len(dataset.train_instances) // data_batch_size):
+        #         x, t, c, y, pos_c, pos_t, _ = dataset.next_train_data()
+        #         train_step(input_x=x,
+        #                    input_y=y,
+        #                    input_t=t,
+        #                    input_c=c,
+        #                    input_c_pos=pos_c,
+        #                    input_t_pos=pos_t,
+        #                    dropout_keep_prob=0.8)
 
         print("-------------------------------------------------------------------------")
         x, t, c, y, pos_c, pos_t, _ = dataset.eval_data()

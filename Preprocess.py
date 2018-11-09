@@ -434,3 +434,4 @@ if __name__ == '__main__':
 
     print('total :', total)
     print('label len:', len(all_labels))
+
