@@ -1,9 +1,9 @@
 import time, datetime, os
 import tensorflow as tf
-import Dataset
+from Dataset import Dataset
 
 """ 
-This source code is referred to by original https://github.com/zhangluoyang/cnn-for-auto-event-extract.
+Original taken from https://github.com/zhangluoyang/cnn-for-auto-event-extract
 """
 
 
@@ -128,22 +128,17 @@ class Model():
             self.accuracy = accuracy
 
 
-
-file = 'datas_ace.txt'
+file = 'ace2005.txt'
 store_path = "ace_data.txt"
 data_batch_size = 20
 max_sequence_length = 20
 windows = 3  # The size of the selected context window
-datas = Dataset.datasets(file=file,
-                 store_path=store_path,
-                 batch_size=data_batch_size,
-                 max_sequence_length=max_sequence_length,
-                 windows=windows)
+dataset = Dataset(batch_size=data_batch_size, max_sequence_length=max_sequence_length, windows=windows)
 
 # parameters of the neural network model
 sentence_length = max_sequence_length
-num_labels = datas.labels_size
-vocab_size = datas.words_size
+num_labels = dataset.labels_size
+vocab_size = dataset.words_size
 word_embedding_size = 100
 pos_embedding_size = 10
 filter_sizes = [3, 4, 5]
@@ -219,8 +214,8 @@ with tf.Graph().as_default():
 
         # sentences_features, c_context, t_context, pos_tag
         for i in range(num_epochs):
-            for j in range(datas.instances_size // data_batch_size):
-                x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = datas.next_cnn_data()
+            for j in range(dataset.instances_size // data_batch_size):
+                x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = dataset.next_cnn_data()
                 train_step(input_x=x,
                            input_y=y,
                            input_t=t,
@@ -233,7 +228,7 @@ with tf.Graph().as_default():
                            input_c_context=c_context)
 
         print("-------------------------------------------------------------------------")
-        x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = datas.eval_cnn_data()
+        x, t, c, y, pos_c, pos_t, sentences_f, c_context, t_context, _ = dataset.eval_cnn_data()
         predicts = eval_step(input_x=x,
                              input_y=y,
                              input_t=t,
@@ -246,8 +241,8 @@ with tf.Graph().as_default():
                              input_c_context=c_context)
         # test results
         for i in range(len(x)):
-            print("Input data：{}".format(", ".join(map(lambda h: datas.all_words[h], x[i]))))
-            print("Trigger word：{}".format(", ".join(map(lambda h: datas.all_words[h], t[i]))))
-            print("Candidate：{}".format(", ".join(map(lambda h: datas.all_words[h], c[i]))))
+            print("Input data：{}".format(", ".join(map(lambda h: dataset.all_words[h], x[i]))))
+            print("Trigger word：{}".format(", ".join(map(lambda h: dataset.all_words[h], t[i]))))
+            print("Candidate：{}".format(", ".join(map(lambda h: dataset.all_words[h], c[i]))))
             print("Prediction:{}".format(predicts[i]))
             print("-------------------------------------------------------------------------")
