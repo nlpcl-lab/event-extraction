@@ -14,8 +14,8 @@ class PreprocessManager():
         self.dir_list = MyConfig.raw_dir_list
         self.dir_path = MyConfig.raw_data_path
         self.dataset = []
-        self.tri_task_format = []
-        self.arg_task_format = []
+        self.tri_task_format_data = []
+        self.arg_task_format_data = []
 
     def preprocess(self):
         '''
@@ -32,11 +32,14 @@ class PreprocessManager():
         print("END PREPROCESSING")
         print('TOTAL DATA :  {}'.format(len(self.dataset)))
         self.foramt_to_argument()
+        pp.pprint(self.arg_task_format_data[0])
 
     def foramt_to_argument(self):
         for d in self.dataset:
-            generated_candi =
-
+            generated_candi = self.generate_argument_candidate_pos_list(d['argument_position'], d['entity_position'],
+                                                                        d['trigger_position'])
+            for candi in generated_candi:
+                self.arg_task_format_data.append([d['sentence']]+candi)
 
     def generate_argument_candidate_pos_list(self, arg_pos, enti_pos, trigger_pos):
         cand_list = []
@@ -59,12 +62,6 @@ class PreprocessManager():
             label = None if arg_pos[idx]=='*' else arg_pos[idx]
             cand_list.append([marks,label])
         return cand_list
-
-        # words = ['It', 'could', 'swell', 'to', 'as', 'much', 'as', '$500 billion', 'if', 'we', 'go', 'to', 'war', 'in',
-        #          'Iraq'],
-        # marks = ['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'T', 'A', 'B'],
-        # label = 'Place',
-
 
     def process_sentencewise(self, doc):
         entities, val_timexs, events = doc
