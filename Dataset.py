@@ -51,23 +51,36 @@ class Dataset:
     def read_dataset(self):
         all_words, all_pos_taggings, all_labels, all_marks = [set() for _ in range(4)]
 
-        def read_one_sentence(words, marks, labels):
+        def read_one(words, marks, label):
             pos_taggings = []
             for word in words: all_words.add(word)
             for mark in marks: all_marks.add(mark)
-            for label in labels: all_labels.add(label)
+            all_labels.add(label)
 
             self.instances.append({
                 'words': words,
                 'pos_taggings': pos_taggings,
                 'marks': marks,
-                'labels': labels,
+                'label': label,
             })
 
-        read_one_sentence(
+        # current word: $500 billion
+        read_one(
             words=['It', 'could', 'swell', 'to', 'as', 'much', 'as', '$500 billion', 'if', 'we', 'go', 'to', 'war', 'in', 'Iraq'],
-            marks=['A',  'A',     'A',     'A',  'A',  'A',    'A',  'B',            'A',  'B',  'A',  'A',  'T',   'A',  'B'],
-            labels=['',  '',      '',      '',   '',   '',     '',   '',           '', 'Attacker','',  '', 'Conflict/Attack', '', 'Place'],
+            marks=['A',  'A',     'A',     'A',  'A',  'A',    'A',  'B', 'A',  'A',  'A',  'A',  'T',   'A',  'A'],
+            label='None',
+        )
+        # current word: we
+        read_one(
+            words=['It', 'could', 'swell', 'to', 'as', 'much', 'as', '$500 billion', 'if', 'we', 'go', 'to', 'war', 'in', 'Iraq'],
+            marks=['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'B', 'A', 'A', 'T', 'A', 'A'],
+            label='Attacker',
+        )
+        # current word: Iraq
+        read_one(
+            words=['It', 'could', 'swell', 'to', 'as', 'much', 'as', '$500 billion', 'if', 'we', 'go', 'to', 'war', 'in', 'Iraq'],
+            marks=['A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'A', 'T', 'A', 'B'],
+            label='Place',
         )
 
         all_words.add('<eos>')
@@ -130,8 +143,7 @@ class Dataset:
 
             assert len(words) == len(marks) == len(pos_taggings) == len(index_words) == len(pos_candidate) == len(pos_trigger)
 
-        assert len(y) == len(x) == len(t) == len(c) == len(pos_c) == len(pos_t) == len(
-            pos_tag)
+        assert len(y) == len(x) == len(t) == len(c) == len(pos_c) == len(pos_t) == len(pos_tag)
 
         return x, t, c, one_hot(y, len(self.all_labels)), pos_c, pos_t, pos_tag
 
