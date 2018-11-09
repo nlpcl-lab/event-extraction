@@ -167,8 +167,7 @@ with tf.Graph().as_default():
         print("Writing to {}\n".format(out_dir))
         checkpoint_dir = os.path.abspath(os.path.join(out_dir, "checkpoints"))
         checkpoint_prefix = os.path.join(checkpoint_dir, "model")
-        if not os.path.exists(checkpoint_dir):
-            os.makedirs(checkpoint_dir)
+        if not os.path.exists(checkpoint_dir): os.makedirs(checkpoint_dir)
         saver = tf.train.Saver(tf.all_variables(), max_to_keep=20)
         sess.run(tf.initialize_all_variables())
 
@@ -183,14 +182,11 @@ with tf.Graph().as_default():
                 model.input_c_pos: input_c_pos,
                 model.dropout_keep_prob: dropout_keep_prob,
             }
-            _, loss, accuracy = sess.run(
-                [train_op, model.loss, model.accuracy],
-                feed_dict)
+            _, loss, accuracy = sess.run([train_op, model.loss, model.accuracy], feed_dict)
             time_str = datetime.datetime.now().isoformat()
             print("{}: , loss {:g}, acc {:g}".format(time_str, loss, accuracy))
 
 
-        # There is no need to calculate the gradient or the weight update in the test phase.
         def eval_step(input_x, input_y, input_t, input_c, input_t_pos, input_c_pos, dropout_keep_prob):
             feed_dict = {
                 model.input_x: input_x,
@@ -200,12 +196,12 @@ with tf.Graph().as_default():
                 model.input_t_pos: input_t_pos,
                 model.input_c_pos: input_c_pos,
                 model.dropout_keep_prob: dropout_keep_prob,
-                # model.sentence_features: sentence_features,
-                # model.input_t_context: input_t_context,
-                # model.input_c_context: input_c_context
             }
             accuracy, predicts = sess.run([model.accuracy, model.predicts], feed_dict)
+            from sklearn.metrics import classification_report
             print("eval accuracy:{}".format(accuracy))
+            print('input_y :', input_y, ', predicts: ', predicts)
+            print(classification_report(input_y, predicts, target_names=dataset.all_labels))
             return predicts
 
 
