@@ -21,10 +21,10 @@ def one_hot(labels, label_id, label_num):
 class Dataset:
     def __init__(self,
                  data_path='',
-                 batch_size=5,
+                 batch_size=30,
                  max_sequence_length=30,
                  windows=3,
-                 eval_num=50):
+                 eval_num=30):
 
         self.windows = windows
         self.batch_size = batch_size
@@ -164,6 +164,7 @@ class Dataset:
     def eval_data(self):
         batch_instances = self.eval_instances
         pos_tag, y, x, t, c, pos_c, pos_t = [list() for _ in range(7)]
+
         for instance in batch_instances:
             words = instance['words']
             pos_taggings = instance['pos_taggings']

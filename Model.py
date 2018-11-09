@@ -17,7 +17,7 @@ class Model():
                  pos_embedding_size=10,
                  filter_sizes=[3, 4, 5],
                  filter_num=200,
-                 batch_size=2
+                 batch_size=10
                  ):
         """
         :param sentence_length
@@ -130,10 +130,10 @@ class Model():
 
 file = 'ace2005.txt'
 store_path = "ace_data.txt"
-data_batch_size = 10
+batch_size = 30
 max_sequence_length = 80
 windows = 3  # The size of the selected context window
-dataset = Dataset(batch_size=data_batch_size, max_sequence_length=max_sequence_length, windows=windows)
+dataset = Dataset(batch_size=batch_size, max_sequence_length=max_sequence_length, windows=windows)
 
 # parameters of the neural network model
 sentence_length = max_sequence_length
@@ -143,7 +143,6 @@ word_embedding_size = 100
 pos_embedding_size = 10
 filter_sizes = [3, 4, 5]
 filter_num = 100
-batch_size = 10
 lr = 1e-3
 num_epochs = 20
 with tf.Graph().as_default():
@@ -184,7 +183,7 @@ with tf.Graph().as_default():
             }
             _, loss, accuracy = sess.run([train_op, model.loss, model.accuracy], feed_dict)
             time_str = datetime.datetime.now().isoformat()
-            print("{}: , loss {:g}, acc {:g}".format(time_str, loss, accuracy))
+            print("{}: loss {:g}, acc {:g}".format(time_str, loss, accuracy))
 
 
         def eval_step(input_x, input_y, input_t, input_c, input_t_pos, input_c_pos, dropout_keep_prob):
@@ -206,7 +205,8 @@ with tf.Graph().as_default():
 
 
         for epoch in range(num_epochs):
-            for j in range(len(dataset.train_instances) // data_batch_size):
+            print('epoch: {}/{}'.format(epoch+1, num_epochs))
+            for j in range(len(dataset.train_instances) // batch_size):
                 x, t, c, y, pos_c, pos_t, _ = dataset.next_train_data()
                 train_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c, input_t_pos=pos_t, dropout_keep_prob=0.8)
 
