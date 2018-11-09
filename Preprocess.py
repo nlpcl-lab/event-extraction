@@ -94,6 +94,7 @@ class PreprocessManager():
         token_list = []
         entity_mark_list = []
         curr_token = ''
+        # TODO: save each mark as variable, not to type 'N' or 'E' each time.
         for idx, el in enumerate(e_mention['ldc_scope']['text']):
             if idx==0:
                 curr_token += el
@@ -110,9 +111,6 @@ class PreprocessManager():
                 else: entity_mark_list.append('N')
                 token_list.append(curr_token)
 
-        print(e_mention['ldc_scope']['text'])
-        print(token_list)
-        print(entity_mark_list)
         assert len(token_list)==len(entity_mark_list)
 
         good_token_list = []  # TODO: The better name....
@@ -121,6 +119,35 @@ class PreprocessManager():
         for tok, mark in zip(token_list, entity_mark_list):
             if mark == 'N':
                 splitted_tok = tok.split()
+                good_token_list += splitted_tok
+                good_entity_mark_list += ['N' for i in range(len(splitted_tok))]
+            if mark == 'E':
+                good_token_list.append(tok.strip())
+                good_entity_mark_list.append('E')
+        assert len(good_entity_mark_list)==len(good_token_list)
+
+        argument_role_label = ['*' for i in range(len(good_entity_mark_list))]
+        for arg in e_mention['argument']:
+            arg_text,arg_role = arg['text_head'],arg['ROLE']
+            assert good_token_list.count(arg_text) == 1  # 단 한번!
+            arg_idx = good_token_list.index(arg_text)
+            argument_role_label[arg_idx] = arg_role
+
+        trigger_type_label = ['*' for i in range(len(good_entity_mark_list))]
+        trigger_idx = good_token_list.index(e_mention['anchor']['text'])
+        trigger_type_label[trigger_idx] = tmp['TYPE']+'/'+tmp['SUBTYPE']
+
+        print()
+        print('')
+        print(e_mention['ldc_scope']['text'])
+        print(good_token_list)
+        print(good_entity_mark_list)
+        print(trigger_type_label)
+        print(argument_role_label)
+
+
+
+
 
 
 
