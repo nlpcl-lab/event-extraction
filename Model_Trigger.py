@@ -31,6 +31,7 @@ class Model():
         :param filter_sizes
         :param filter_num
         """
+        # TODO: Check whether batch size can determined arbitrary in <1.0.0 version.
         # [batch_size, sentence_length]
         input_x = tf.placeholder(tf.int32, shape=[batch_size, sentence_length], name="input_x")
         self.input_x = input_x
