@@ -422,6 +422,7 @@ if __name__ == '__main__':
     man.preprocess()
 
     # Example
+    trigger_classification_data = man.tri_task_format_data
     argument_classification_data = man.arg_task_format_data
     # print('\n\n')
     # print(argument_classification_data[0])
@@ -434,4 +435,5 @@ if __name__ == '__main__':
 
     print('total :', total)
     print('label len:', len(all_labels))
+
 
