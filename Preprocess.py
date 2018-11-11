@@ -32,8 +32,10 @@ class PreprocessManager():
         print("END PREPROCESSING")
         print('TOTAL DATA :  {}'.format(len(self.dataset)))
         self.format_to_trigger()
-
         self.format_to_argument()
+
+        print('TRIGGER DATASET: {}\nARGUMENT DATASET: {}\n'.format(len(self.tri_task_format_data),
+                                                                   len(self.arg_task_format_data)))
 
     def format_to_argument(self):
         for d in self.dataset:

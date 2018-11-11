@@ -189,7 +189,6 @@ with tf.Graph().as_default():
             from sklearn.metrics import classification_report
             print("eval accuracy:{}".format(accuracy))
             print("input_y : ", [np.argmax(item) for item in input_y], ', predicts :', predicts)
-            # print(classification_report(input_y, predicts, target_names=dataset.all_labels))
             print(classification_report([np.argmax(item) for item in input_y], predicts))
             return predicts
 
