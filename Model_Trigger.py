@@ -205,12 +205,11 @@ with tf.Graph().as_default():
                 eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c,  dropout_keep_prob=1.0)
 
         print("----test results---------------------------------------------------------------------")
-        x, t, c, y, pos_c, pos_t, _ = dataset.next_eval_data()
+        x, c, y, pos_c, _ = dataset.next_eval_data()
         predicts = eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c,  dropout_keep_prob=1.0)
 
         for i in range(len(x)):
             print("Input data：{}".format(", ".join(map(lambda h: dataset.all_words[h], x[i]))))
-            print("Trigger word：{}".format(", ".join(map(lambda h: dataset.all_words[h], t[i]))))
             print("Candidate：{}".format(", ".join(map(lambda h: dataset.all_words[h], c[i]))))
             print("Prediction:{}".format(predicts[i]))
             print("-------------------------------------------------------------------------")
