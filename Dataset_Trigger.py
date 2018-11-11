@@ -101,7 +101,7 @@ class Dataset_Trigger:
 
     def next_train_data(self):
         batch_instances = self.next_batch()
-        pos_tag, y, x, c, pos_c = [list() for _ in range(7)]
+        pos_tag, y, x, c, pos_c = [list() for _ in range(5)]
 
         for instance in batch_instances:
             words = instance['words']
@@ -129,7 +129,7 @@ class Dataset_Trigger:
 
     def next_eval_data(self):
         batch_instances = self.eval_instances
-        pos_tag, y, x, c, pos_c= [list() for _ in range(7)]
+        pos_tag, y, x, c, pos_c= [list() for _ in range(5)]
 
         for instance in batch_instances:
             words = instance['words']

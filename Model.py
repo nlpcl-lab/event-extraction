@@ -129,8 +129,6 @@ class Model():
             self.accuracy = accuracy
 
 
-file = 'ace2005.txt'
-store_path = "ace_data.txt"
 batch_size = 30
 max_sequence_length = 80
 windows = 3  # The size of the selected context window

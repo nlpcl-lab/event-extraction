@@ -32,6 +32,7 @@ class PreprocessManager():
         print("END PREPROCESSING")
         print('TOTAL DATA :  {}'.format(len(self.dataset)))
         self.format_to_trigger()
+
         self.format_to_argument()
 
     def format_to_argument(self):

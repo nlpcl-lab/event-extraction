@@ -68,7 +68,7 @@ class Model():
         for i, filter_size in enumerate(filter_sizes):
             with tf.device('/cpu:0'), tf.name_scope('conv-maxpool-%s' % filter_size):
                 # The current word and context of the sentence feature considered here
-                filter_shape = [filter_size, word_embedding_size + 2 * pos_embedding_size, 1, filter_num]
+                filter_shape = [filter_size, word_embedding_size + 1 * pos_embedding_size, 1, filter_num]
                 W = tf.Variable(tf.truncated_normal(filter_shape, stddev=0.1), name="W")
                 b = tf.Variable(tf.constant(0.1, shape=[filter_num]), name="b")
                 # Convolution operation
@@ -125,8 +125,6 @@ class Model():
             self.accuracy = accuracy
 
 
-file = 'ace2005.txt'
-store_path = "ace_data.txt"
 batch_size = 30
 max_sequence_length = 80
 windows = 3  # The size of the selected context window
