@@ -133,7 +133,6 @@ class PreprocessManager():
 
         idx_list = [0 for i in range(len(e_mention['ldc_scope']['text']))]
         if not (len(idx_list) == (int(e_mention['ldc_scope']['position'][1])-int(e_mention['ldc_scope']['position'][0])+1)):
-            print('Exception')
             return 1
         sent_start_idx = int(e_mention['ldc_scope']['position'][0])
 
@@ -251,7 +250,7 @@ class PreprocessManager():
             for mention in entity['mention']:
                 if sent_pos[0] <= int(mention[headVSextent]['position'][0]) and int(mention[headVSextent]['position'][1]) <= sent_pos[1]:
                     if mention[headVSextent]['position'][0] in check:  # duplicate entity in one word.
-                        print('으악!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                        #print('으악!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
                         #raise ValueError
                         continue
                     check[mention[headVSextent]['position'][0]] = 1
