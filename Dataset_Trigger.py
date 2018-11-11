@@ -8,7 +8,7 @@ class Dataset_Trigger:
                  batch_size=30,
                  max_sequence_length=30,
                  windows=3,
-                 eval_num=30):
+                 eval_num=1000):
 
         self.windows = windows
         self.batch_size = batch_size
