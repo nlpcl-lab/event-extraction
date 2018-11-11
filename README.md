@@ -7,6 +7,7 @@
 
 - Increase the number of data used for evaluation (currently only 30)
 - Add word2vec
+- Move hyperparameter into `Config.py`
 - Trigger Classification performance
 ```bash
 2018-11-11T18:18:11.830461: loss 0.100064, acc 0.966667
