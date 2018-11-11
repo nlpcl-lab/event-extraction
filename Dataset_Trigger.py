@@ -101,7 +101,7 @@ class Dataset_Trigger:
 
     def next_train_data(self):
         batch_instances = self.next_batch()
-        pos_tag, y, x, t, c, pos_c, pos_t = [list() for _ in range(7)]
+        pos_tag, y, x, c, pos_c = [list() for _ in range(7)]
 
         for instance in batch_instances:
             words = instance['words']
@@ -124,12 +124,12 @@ class Dataset_Trigger:
             pos_c.append(pos_candidate)
             c.append([index_words[index_candidates[0]]] * self.max_sequence_length)
             assert len(words) == len(marks) == len(pos_taggings) == len(index_words) == len(pos_candidate)
-        assert len(y) == len(x) == len(t) == len(c) == len(pos_c) == len(pos_t) == len(pos_tag)
-        return x, t, c, one_hot(y, self.label_id, len(self.all_labels)), pos_c, pos_t, pos_tag
+        assert len(y) == len(x) == len(c) == len(pos_c) == len(pos_tag)
+        return x, c, one_hot(y, self.label_id, len(self.all_labels)), pos_c, pos_tag
 
     def eval_data(self):
         batch_instances = self.eval_instances
-        pos_tag, y, x, t, c, pos_c, pos_t = [list() for _ in range(7)]
+        pos_tag, y, x, c, pos_c= [list() for _ in range(7)]
 
         for instance in batch_instances:
             words = instance['words']
@@ -154,5 +154,9 @@ class Dataset_Trigger:
             pos_c.append(pos_candidate)
             c.append([index_words[index_candidates[0]]] * self.max_sequence_length)
             assert len(words) == len(marks) == len(pos_taggings) == len(index_words) == len(pos_candidate)
-        assert len(y) == len(x) == len(t) == len(c) == len(pos_c) == len(pos_t) == len(pos_tag)
-        return x, t, c, one_hot(y, self.label_id, len(self.all_labels)), pos_c, pos_t, pos_tag
+        assert len(y) == len(x) == len(c) == len(pos_c) == len(pos_tag)
+        return x, c, one_hot(y, self.label_id, len(self.all_labels)), pos_c, pos_tag
+
+if __name__ == '__main__':
+    D = Dataset_Trigger()
+    a = D.next_train_data()
