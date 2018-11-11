@@ -1,3 +1,4 @@
+import numpy as np
 import time, datetime, os
 import tensorflow as tf
 from Dataset_Trigger import Dataset_Trigger as Dataset
@@ -36,14 +37,11 @@ class Model():
         # [batch_size, num_labels]
         input_y = tf.placeholder(tf.float32, shape=[batch_size, num_labels], name="input_y")
         self.input_y = input_y
-        # trigger distance vector
-        # example: [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
-        input_t_pos = tf.placeholder(tf.int32, shape=[batch_size, sentence_length], name="input_t_pos")
-        self.input_t_pos = input_t_pos
         # argument candidates distance vector
         # example: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
         input_c_pos = tf.placeholder(tf.int32, shape=[batch_size, sentence_length], name="input_c_pos")
         self.input_c_pos = input_c_pos
+
         dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
         self.dropout_keep_prob = dropout_keep_prob
         with tf.device('/cpu:0'), tf.name_scope("word_embedding_layer"):
@@ -51,21 +49,19 @@ class Model():
             W_text = tf.Variable(tf.random_normal(shape=[vocab_size, word_embedding_size], mean=0.0, stddev=0.5), name="word_table")
 
             input_word_vec = tf.nn.embedding_lookup(W_text, input_x)
-            input_t_pos_t = input_t_pos + (sentence_length - 1)
+
             Tri_pos = tf.Variable(
                 tf.random_normal(shape=[2 * (sentence_length - 1) + 1, pos_embedding_size], mean=0.0, stddev=0.5),
                 name="tri_pos_table")
-            input_t_pos_vec = tf.nn.embedding_lookup(Tri_pos, input_t_pos_t)
             input_c_pos_c = input_c_pos + (sentence_length - 1)
             Can_pos = tf.Variable(
                 tf.random_normal(shape=[2 * (sentence_length - 1) + 1, pos_embedding_size], mean=0.0, stddev=0.5),
                 name="candidate_pos_table")
             input_c_pos_vec = tf.nn.embedding_lookup(Can_pos, input_c_pos_c)
-            # print input_t_pos_vec
-            # print input_c_pos_vec
+
             # The feature of the distance and the word features of the sentence constitute a collated feature as an input to the convolutional neural network.
             # [batch_size, sentence_length, word_embedding_size+2*pos_size]
-            input_sentence_vec = tf.concat(2, [input_word_vec, input_t_pos_vec, input_c_pos_vec])
+            input_sentence_vec = tf.concat(2, [input_word_vec, input_c_pos_vec])
             # CNN supports 4d input, so increase the one-dimensional vector to indicate the number of input channels.
             input_sentence_vec_expanded = tf.expand_dims(input_sentence_vec, -1)
         pooled_outputs = []
@@ -172,13 +168,10 @@ with tf.Graph().as_default():
         sess.run(tf.initialize_all_variables())
 
 
-        def train_step(input_x, input_y, input_t, input_c, input_t_pos, input_c_pos, dropout_keep_prob):
+        def train_step(input_x, input_y, input_c, input_c_pos, dropout_keep_prob):
             feed_dict = {
                 model.input_x: input_x,
                 model.input_y: input_y,
-                # model.input_t:input_t,
-                # model.input_c:input_c,
-                model.input_t_pos: input_t_pos,
                 model.input_c_pos: input_c_pos,
                 model.dropout_keep_prob: dropout_keep_prob,
             }
@@ -187,13 +180,10 @@ with tf.Graph().as_default():
             print("{}: loss {:g}, acc {:g}".format(time_str, loss, accuracy))
 
 
-        def eval_step(input_x, input_y, input_t, input_c, input_t_pos, input_c_pos, dropout_keep_prob):
+        def eval_step(input_x, input_y, input_c, input_c_pos, dropout_keep_prob):
             feed_dict = {
                 model.input_x: input_x,
                 model.input_y: input_y,
-                # model.input_t:input_t,
-                # model.input_c:input_c,
-                model.input_t_pos: input_t_pos,
                 model.input_c_pos: input_c_pos,
                 model.dropout_keep_prob: dropout_keep_prob,
             }
@@ -217,7 +207,7 @@ with tf.Graph().as_default():
                 eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c,  dropout_keep_prob=1.0)
 
         print("----test results---------------------------------------------------------------------")
-        x, t, c, y, pos_c, pos_t, _ = dataset.eval_data()
+        x, t, c, y, pos_c, pos_t, _ = dataset.next_eval_data()
         predicts = eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c,  dropout_keep_prob=1.0)
 
         for i in range(len(x)):

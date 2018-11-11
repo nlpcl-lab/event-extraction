@@ -176,3 +176,11 @@ class Dataset:
         assert len(y) == len(x) == len(t) == len(c) == len(pos_c) == len(pos_t) == len(
             pos_tag)
         return x, t, c, one_hot(y, self.label_id, len(self.all_labels)), pos_c, pos_t, pos_tag
+
+if __name__=='__main__':
+    import pprint
+    pp = pprint.PrettyPrinter(indent=4)
+    D = Dataset()
+    q = D.next_train_data()
+    for i in q:
+        pp.pprint(i[0])

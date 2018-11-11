@@ -47,7 +47,7 @@ class Dataset_Trigger:
             all_labels.add(label)
 
             if len(words) > 80:
-                print('len(word) > 80, Goodbye! ', len(words), words)
+                #print('len(word) > 80, Goodbye! ', len(words), words)
                 return
 
             self.instances.append({
@@ -127,7 +127,7 @@ class Dataset_Trigger:
         assert len(y) == len(x) == len(c) == len(pos_c) == len(pos_tag)
         return x, c, one_hot(y, self.label_id, len(self.all_labels)), pos_c, pos_tag
 
-    def eval_data(self):
+    def next_eval_data(self):
         batch_instances = self.eval_instances
         pos_tag, y, x, c, pos_c= [list() for _ in range(7)]
 
