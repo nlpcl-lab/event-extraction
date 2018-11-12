@@ -94,5 +94,5 @@ weighted avg       0.71      0.77      0.74        30
 
 ## Contributors
 
-ChaeHun, Seungwon
+[ChaeHun](http://nlp.kaist.ac.kr/~ddehun), [Seungwon](http://nlp.kaist.ac.kr/~swyoon)
 
