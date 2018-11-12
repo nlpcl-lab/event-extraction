@@ -1,5 +1,4 @@
 import numpy as np
-import nltk
 from Util import one_hot, find_candidates
 
 
@@ -35,6 +34,7 @@ class Dataset_Trigger:
         self.batch_nums = len(self.train_instances) // self.batch_size
         self.index = np.arange(len(self.train_instances))
         self.point = 0
+        print('all label for dataset: {}'.format(len(self.all_labels)))
 
     def divide_train_eval_data(self):
         testset_fname = []
@@ -57,13 +57,13 @@ class Dataset_Trigger:
             # TODO: remove comments mark when use POS tag info for model. `nltk.pos_tag()` method too slow.
             #pos_taggings = nltk.pos_tag(words)
             #pos_taggings = [pos_tagging[1] for pos_tagging in pos_taggings]
-            pos_taggings = [None for i in range(10)]
+            pos_taggings = [None for i in range(1)]
             for word in words: all_words.add(word)
             for mark in marks: all_marks.add(mark)
             for pos_tag in pos_taggings: all_pos_taggings.add(pos_tag)
             all_labels.add(label)
 
-            if len(words) > 80:
+            if len(words) >80:
                 #print('len(word) > 80, Goodbye! ', len(words), words)
                 return
 
@@ -75,18 +75,11 @@ class Dataset_Trigger:
                 'fname':fname
             })
 
-        '''
-        # EXAMPLE
-        ['Mama','just','killed','the man']
-        ['B','A','A','A']
-        None
-        '''
-
         from Preprocess import PreprocessManager
         man = PreprocessManager()
         man.preprocess()
-        argument_classification_data = man.tri_task_format_data
-        for data in argument_classification_data:
+        tri_classification_data = man.tri_task_format_data
+        for data in tri_classification_data:
             read_one(words=data[0], marks=data[1], label=data[2], fname=data[3])
 
         all_words.add('<eos>')
@@ -142,6 +135,7 @@ class Dataset_Trigger:
             pos_c.append(pos_candidate)
             c.append([index_words[index_candidates[0]]] * self.max_sequence_length)
             assert len(words) == len(marks) == len(pos_taggings) == len(index_words) == len(pos_candidate)
+
         assert len(y) == len(x) == len(c) == len(pos_c) == len(pos_tag)
         return x, c, one_hot(y, self.label_id, len(self.all_labels)), pos_c, pos_tag
 
