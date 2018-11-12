@@ -115,6 +115,9 @@ class Model():
 
 
 dataset = Dataset(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length, windows=hp.windows)
+
+print('dataset.all_labels : ', dataset.all_labels)
+
 with tf.Graph().as_default():
     sess = tf.Session()
     with sess.as_default():

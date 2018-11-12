@@ -73,7 +73,7 @@ class PreprocessManager():
             marks[idx]='B'
             for i in tri_idx_list:
                 marks[i]='T'
-            label = None if arg_pos[idx]=='*' else arg_pos[idx]
+            label = 'None' if arg_pos[idx]=='*' else arg_pos[idx]
             cand_list.append([marks,label])
         return cand_list
 
@@ -95,7 +95,7 @@ class PreprocessManager():
         for idx in range(len(trigger_pos)):
             marks = ['A' for i in range(len(trigger_pos))]
             marks[idx]='B'
-            label = None
+            label = 'None'
             for i in idx_list:
                 if idx == i[0]: label = i[1]
             cand_list.append([marks,label])
