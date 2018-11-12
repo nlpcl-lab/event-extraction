@@ -48,7 +48,8 @@ class Model():
 
         dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
         self.dropout_keep_prob = dropout_keep_prob
-        with tf.device('/cpu:0'), tf.name_scope("word_embedding_layer"):
+        #with tf.device('/cpu:0'), tf.name_scope("word_embedding_layer"):
+        with tf.name_scope("word_embedding_layer"):
             # [vocab_size, embedding_size]
             # TODO: Word2Vec lookup table
             W_text = tf.Variable(tf.random_normal(shape=[vocab_size, word_embedding_size], mean=0.0, stddev=0.5), name="word_table")
@@ -66,12 +67,16 @@ class Model():
 
             # The feature of the distance and the word features of the sentence constitute a collated feature as an input to the convolutional neural network.
             # [batch_size, sentence_length, word_embedding_size+2*pos_size]
-            input_sentence_vec = tf.concat(2, [input_word_vec, input_c_pos_vec])
+            if int(tf.__version__.split('.')[0])>=1:
+                input_sentence_vec = tf.concat([input_word_vec, input_c_pos_vec],2)
+            else:
+                input_sentence_vec = tf.concat(2, [input_word_vec, input_c_pos_vec])
             # CNN supports 4d input, so increase the one-dimensional vector to indicate the number of input channels.
             input_sentence_vec_expanded = tf.expand_dims(input_sentence_vec, -1)
         pooled_outputs = []
         for i, filter_size in enumerate(filter_sizes):
-            with tf.device('/cpu:0'), tf.name_scope('conv-maxpool-%s' % filter_size):
+#            with tf.device('/cpu:0'), tf.name_scope('conv-maxpool-%s' % filter_size):
+            with tf.name_scope('conv-maxpool-%s' % filter_size):
                 # The current word and context of the sentence feature considered here
                 filter_shape = [filter_size, word_embedding_size + 1 * pos_embedding_size, 1, filter_num]
                 W = tf.Variable(tf.truncated_normal(filter_shape, stddev=0.1), name="W")
@@ -95,7 +100,10 @@ class Model():
 
         num_filters_total = filter_num * len(filter_sizes)
         # The number of all filters used (number of channels output)
-        h_pool = tf.concat(3, pooled_outputs)
+        if int(tf.__version__.split('.')[0]) >= 1:
+            h_pool = tf.concat(pooled_outputs, 3)
+        else:
+            h_pool = tf.concat(3, pooled_outputs)
         # print h_pool
         # Expand to the next level classifier
         h_pool_flat = tf.reshape(h_pool, [-1, num_filters_total])
@@ -103,13 +111,17 @@ class Model():
         lexical_vec = tf.reshape(input_word_vec, shape=(-1, sentence_length * word_embedding_size))
         # Combine lexical level features and sentence level features
         # [batch_size, num_filters_total] + [batch_size, sentence_length*word_embedding_size]
-        all_input_features = tf.concat(1, [lexical_vec, h_pool_flat])
+        if int(tf.__version__.split('.')[0]) >= 1:
+            all_input_features = tf.concat([lexical_vec, h_pool_flat],1)
+        else:
+            all_input_features = tf.concat(1, [lexical_vec, h_pool_flat])
         # The overall classifier goes through a layer of dropout and then into softmax
         with tf.device('/cpu:0'), tf.name_scope('dropout'):
             all_features = tf.nn.dropout(all_input_features, dropout_keep_prob)
         # print all_features
         # Classifier
-        with tf.device('/cpu:0'), tf.name_scope('softmax'):
+        #with tf.device('/cpu:0'), tf.name_scope('softmax'):
+        with tf.name_scope('softmax'):
             W = tf.Variable(tf.truncated_normal([num_filters_total + sentence_length * word_embedding_size, num_labels], stddev=0.1), name="W")
             b = tf.Variable(tf.constant(0.1, shape=[num_labels]), name="b")
             scores = tf.nn.xw_plus_b(all_features, W, b, name="scores")
@@ -119,16 +131,20 @@ class Model():
         # print scores
         # print input_y
         # Cost function of the model
-        with tf.device('/cpu:0'), tf.name_scope('loss'):
-            entropy = tf.nn.softmax_cross_entropy_with_logits(scores, input_y)
+#        with tf.device('/cpu:0'), tf.name_scope('loss'):
+        with tf.name_scope('loss'):
+            if int(tf.__version__.split('.')[0]) >= 1:
+                entropy = tf.nn.softmax_cross_entropy_with_logits(labels=input_y, logits=scores)
+            else:
+                entropy = tf.nn.softmax_cross_entropy_with_logits(scores, input_y)
             loss = tf.reduce_mean(entropy)
             self.loss = loss
         # Accuracy is used for each training session
-        with tf.device('/cpu:0'), tf.name_scope("accuracy"):
+        #with tf.device('/cpu:0'), tf.name_scope("accuracy"):
+        with tf.name_scope("accuracy"):
             correct = tf.equal(predicts, tf.argmax(input_y, 1))
             accuracy = tf.reduce_mean(tf.cast(correct, "float"), name="accuracy")
             self.accuracy = accuracy
-
 
 
 dataset = Dataset(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length, windows=hp.windows)
@@ -145,17 +161,18 @@ with tf.Graph().as_default():
                       filter_num=hp.filter_num,
                       batch_size=hp.batch_size)
 
-        optimizer = tf.train.AdamOptimizer(lr)
+        optimizer = tf.train.AdamOptimizer(hp.lr)
         grads_and_vars = optimizer.compute_gradients(model.loss)
         train_op = optimizer.apply_gradients(grads_and_vars)
 
-        timestamp = str(int(time.time()))
-        out_dir = os.path.abspath(os.path.join(os.path.curdir, "model_01", timestamp))
-        print("Writing to {}\n".format(out_dir))
-        checkpoint_dir = os.path.abspath(os.path.join(out_dir, "checkpoints"))
-        checkpoint_prefix = os.path.join(checkpoint_dir, "model")
-        if not os.path.exists(checkpoint_dir): os.makedirs(checkpoint_dir)
-        saver = tf.train.Saver(tf.all_variables(), max_to_keep=20)
+        # TODO: after train, do save
+        # timestamp = str(int(time.time()))
+        # out_dir = os.path.abspath(os.path.join(os.path.curdir, "model_01", timestamp))
+        # print("Writing to {}\n".format(out_dir))
+        # checkpoint_dir = os.path.abspath(os.path.join(out_dir, "checkpoints"))
+        # checkpoint_prefix = os.path.join(checkpoint_dir, "model")
+        # if not os.path.exists(checkpoint_dir): os.makedirs(checkpoint_dir)
+        # saver = tf.train.Saver(tf.all_variables(), max_to_keep=20)
         sess.run(tf.initialize_all_variables())
 
 
@@ -182,7 +199,7 @@ with tf.Graph().as_default():
             from sklearn.metrics import classification_report
             print("eval accuracy:{}".format(accuracy))
             print("input_y : ", [np.argmax(item) for item in input_y], ', predicts :', predicts)
-            print(classification_report([np.argmax(item) for item in input_y], predicts, target_names=dataset.all_labels))
+            print(classification_report([np.argmax(item) for item in input_y], predicts))#, target_names=dataset.all_labels))
             return predicts
 
 
@@ -191,17 +208,10 @@ with tf.Graph().as_default():
             for j in range(len(dataset.train_instances) // hp.batch_size):
                 x, c, y, pos_c, _ = dataset.next_train_data()
                 train_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=0.8)
-
-            if epoch % 1 == 0:
+            if epoch % 3 == 0:
                 x, c, y, pos_c, _ = dataset.next_eval_data()
                 eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=1.0)
 
         print("----test results---------------------------------------------------------------------")
         x, c, y, pos_c, _ = dataset.next_eval_data()
         predicts = eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=1.0)
-
-        # for i in range(len(x)):
-        #     print("Input data：{}".format(", ".join(map(lambda h: dataset.all_words[h], x[i]))))
-        #     print("Candidate：{}".format(", ".join(map(lambda h: dataset.all_words[h], c[i]))))
-        #     print("Prediction:{}".format(predicts[i]))
-        #     print("-------------------------------------------------------------------------")
