@@ -32,7 +32,7 @@ class Model():
         :param filter_sizes
         :param filter_num
         """
-
+        batch_size = None
         input_x = tf.placeholder(tf.int32, shape=[batch_size, sentence_length], name="input_x")
         self.input_x = input_x
         input_y = tf.placeholder(tf.float32, shape=[batch_size, num_labels], name="input_y")
