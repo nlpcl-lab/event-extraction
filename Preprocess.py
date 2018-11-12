@@ -74,6 +74,11 @@ class PreprocessManager():
             for i in tri_idx_list:
                 marks[i]='T'
             label = 'None' if arg_pos[idx]=='*' else arg_pos[idx]
+
+            '''
+            Time-After,  Time-At-End,  Time-Ending , Time-Holds , Time-At-Beginning, Time-Before,  Time-Within, Time-Starting to Time
+            '''
+            if 'Time-' in label: label = 'Time'
             cand_list.append([marks,label])
         return cand_list
 
