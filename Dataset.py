@@ -64,7 +64,7 @@ class Dataset:
             all_labels.add(label)
 
             if len(words) > 80:
-                print('len(word) > 80, Goodbye! ', len(words), words)
+                # print('len(word) > 80, Goodbye! ', len(words), words)
                 return
 
             self.instances.append({

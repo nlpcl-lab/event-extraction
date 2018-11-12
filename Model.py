@@ -115,6 +115,7 @@ class Model():
 
 
 dataset = Dataset(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length, windows=hp.windows)
+
 with tf.Graph().as_default():
     sess = tf.Session()
     with sess.as_default():
@@ -170,8 +171,7 @@ with tf.Graph().as_default():
             from sklearn.metrics import classification_report
             print("eval accuracy:{}".format(accuracy))
             print("input_y : ", [np.argmax(item) for item in input_y], ', predicts :', predicts)
-            # print(classification_report(input_y, predicts, target_names=dataset.all_labels))
-            print(classification_report([np.argmax(item) for item in input_y], predicts))
+            print(classification_report([np.argmax(item) for item in input_y], predicts, target_names=dataset.all_labels))
             return predicts
 
 
@@ -181,7 +181,7 @@ with tf.Graph().as_default():
                 x, t, c, y, pos_c, pos_t, _ = dataset.next_train_data()
                 train_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c, input_t_pos=pos_t, dropout_keep_prob=0.8)
 
-            if epoch % 3 == 0:
+            if epoch % 5 == 0:
                 x, t, c, y, pos_c, pos_t, _ = dataset.eval_data()
                 eval_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c, input_t_pos=pos_t, dropout_keep_prob=1.0)
 
@@ -189,9 +189,9 @@ with tf.Graph().as_default():
         x, t, c, y, pos_c, pos_t, _ = dataset.eval_data()
         predicts = eval_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c, input_t_pos=pos_t, dropout_keep_prob=1.0)
 
-        for i in range(len(x)):
-            print("Input data：{}".format(", ".join(map(lambda h: dataset.all_words[h], x[i]))))
-            print("Trigger word：{}".format(", ".join(map(lambda h: dataset.all_words[h], t[i]))))
-            print("Candidate：{}".format(", ".join(map(lambda h: dataset.all_words[h], c[i]))))
-            print("Prediction:{}".format(predicts[i]))
-            print("-------------------------------------------------------------------------")
+        # for i in range(len(x)):
+        #     print("Input data：{}".format(", ".join(map(lambda h: dataset.all_words[h], x[i]))))
+        #     print("Trigger word：{}".format(", ".join(map(lambda h: dataset.all_words[h], t[i]))))
+        #     print("Candidate：{}".format(", ".join(map(lambda h: dataset.all_words[h], c[i]))))
+        #     print("Prediction:{}".format(predicts[i]))
+        #     print("-------------------------------------------------------------------------")

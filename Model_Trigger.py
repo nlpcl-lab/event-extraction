@@ -3,6 +3,8 @@ import time, datetime, os
 import tensorflow as tf
 from Dataset_Trigger import Dataset_Trigger as Dataset
 
+from Config import HyperParams as hp
+
 """
 Trigger Classification is based on the previous argument classification task's code.
 Reference code link is https://github.com/zhangluoyang/cnn-for-auto-event-extract
@@ -128,32 +130,20 @@ class Model():
             self.accuracy = accuracy
 
 
-batch_size = 170
-max_sequence_length = 80
-windows = 3  # The size of the selected context window
-dataset = Dataset(batch_size=batch_size, max_sequence_length=max_sequence_length, windows=windows)
 
-# parameters of the neural network model
-sentence_length = max_sequence_length
-num_labels = len(dataset.all_labels)
-vocab_size = len(dataset.all_words)
-word_embedding_size = 100
-pos_embedding_size = 10
-filter_sizes = [3, 4, 5]
-filter_num = 100
-lr = 1e-3
-num_epochs = 20
+dataset = Dataset(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length, windows=hp.windows)
+
 with tf.Graph().as_default():
     sess = tf.Session()
     with sess.as_default():
-        model = Model(sentence_length=sentence_length,
-                      num_labels=num_labels,
-                      vocab_size=vocab_size,
-                      word_embedding_size=word_embedding_size,
-                      pos_embedding_size=pos_embedding_size,
-                      filter_sizes=filter_sizes,
-                      filter_num=filter_num,
-                      batch_size=batch_size)
+        model = Model(sentence_length=hp.max_sequence_length,
+                      num_labels=len(dataset.all_labels),
+                      vocab_size=len(dataset.all_words),
+                      word_embedding_size=hp.word_embedding_size,
+                      pos_embedding_size=hp.pos_embedding_size,
+                      filter_sizes=hp.filter_sizes,
+                      filter_num=hp.filter_num,
+                      batch_size=hp.batch_size)
 
         optimizer = tf.train.AdamOptimizer(lr)
         grads_and_vars = optimizer.compute_gradients(model.loss)
@@ -192,23 +182,23 @@ with tf.Graph().as_default():
             from sklearn.metrics import classification_report
             print("eval accuracy:{}".format(accuracy))
             print("input_y : ", [np.argmax(item) for item in input_y], ', predicts :', predicts)
-            print(classification_report([np.argmax(item) for item in input_y], predicts))
+            print(classification_report([np.argmax(item) for item in input_y], predicts, target_names=dataset.all_labels))
             return predicts
 
 
-        for epoch in range(num_epochs):
-            print('epoch: {}/{}'.format(epoch+1, num_epochs))
-            for j in range(len(dataset.train_instances) // batch_size):
-                x, c, y, pos_c,  _ = dataset.next_train_data()
+        for epoch in range(hp.num_epochs):
+            print('epoch: {}/{}'.format(epoch + 1, hp.num_epochs))
+            for j in range(len(dataset.train_instances) // hp.batch_size):
+                x, c, y, pos_c, _ = dataset.next_train_data()
                 train_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=0.8)
 
             if epoch % 1 == 0:
                 x, c, y, pos_c, _ = dataset.next_eval_data()
-                eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c,  dropout_keep_prob=1.0)
+                eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=1.0)
 
         print("----test results---------------------------------------------------------------------")
         x, c, y, pos_c, _ = dataset.next_eval_data()
-        predicts = eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c,  dropout_keep_prob=1.0)
+        predicts = eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=1.0)
 
         # for i in range(len(x)):
         #     print("Input data：{}".format(", ".join(map(lambda h: dataset.all_words[h], x[i]))))
