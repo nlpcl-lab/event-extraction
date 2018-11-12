@@ -11,14 +11,7 @@ Tensorflow Implementation of Deep Learning Approach for  Event Extraction([**ACE
 
 ##### Train Example:
 ```bash
-$ python train.py --embedding_path "GoogleNews-vectors-negative300.bin"
-```
-
-### Evaluation
-
-##### Evaluation Example:
-```bash
-$ python eval.py --checkpoint_dir "runs/1523902663/checkpoints/"
+$ python model.py --embedding_path "GoogleNews-vectors-negative300.bin"
 ```
 
 ## Todo 
