@@ -6,7 +6,18 @@ Tensorflow Implementation of Deep Learning Approach for  Event Extraction([**ACE
 
 ### Train
 
-"[GoogleNews-vectors-negative300](https://code.google.com/archive/p/word2vec/)" is used as pre-trained word2vec model.
+* "[GoogleNews-vectors-negative300](https://code.google.com/archive/p/word2vec/)" is used as pre-trained word2vec model.
+* Performance (accuracy and f1-socre) outputs during training are **NOT OFFICIAL SCORE** of *ACE 2005*. 
+
+##### Train Example:
+```bash
+$ python train.py --embedding_path "GoogleNews-vectors-negative300.bin"
+```
+
+##### Evaluation Example:
+```bash
+$ python eval.py --checkpoint_dir "runs/1523902663/checkpoints/"
+```
 
 ## Todo 
 
