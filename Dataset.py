@@ -27,11 +27,27 @@ class Dataset:
         self.label_id = dict()
 
         self.read_dataset()
-        self.eval_instances = self.instances[-eval_num:]
-        self.train_instances = self.instances[0:-eval_num]
+        self.train_instances, self.eval_instances = [],[]
+        self.divide_train_eval_data()
         self.batch_nums = len(self.train_instances) // self.batch_size
         self.index = np.arange(len(self.train_instances))
         self.point = 0
+
+    def divide_train_eval_data(self):
+        testset_fname = []
+        for ins in self.instances:
+            if 'nw/adj' not in ins['fname']:
+                self.train_instances.append(ins)
+            elif ins['fname'] in testset_fname:
+                self.eval_instances.append(ins)
+            elif len(testset_fname) > 40:
+                self.train_instances.append(ins)
+            else:
+                testset_fname.append(ins['fname'])
+                self.eval_instances.append(ins)
+
+        print('TRAIN: {} TEST: {}'.format(len(self.train_instances), len(self.eval_instances)))
+        assert len(self.instances) == (len(self.train_instances) + len(self.eval_instances))
 
     def read_dataset(self):
         all_words, all_pos_taggings, all_labels, all_marks = [set() for _ in range(4)]
