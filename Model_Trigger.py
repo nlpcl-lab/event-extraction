@@ -48,6 +48,7 @@ class Model():
         self.dropout_keep_prob = dropout_keep_prob
         with tf.device('/cpu:0'), tf.name_scope("word_embedding_layer"):
             # [vocab_size, embedding_size]
+            # TODO: Word2Vec lookup table
             W_text = tf.Variable(tf.random_normal(shape=[vocab_size, word_embedding_size], mean=0.0, stddev=0.5), name="word_table")
 
             input_word_vec = tf.nn.embedding_lookup(W_text, input_x)
@@ -127,7 +128,7 @@ class Model():
             self.accuracy = accuracy
 
 
-batch_size = 30
+batch_size = 170
 max_sequence_length = 80
 windows = 3  # The size of the selected context window
 dataset = Dataset(batch_size=batch_size, max_sequence_length=max_sequence_length, windows=windows)
@@ -201,7 +202,7 @@ with tf.Graph().as_default():
                 x, c, y, pos_c,  _ = dataset.next_train_data()
                 train_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=0.8)
 
-            if epoch % 3 == 0:
+            if epoch % 1 == 0:
                 x, c, y, pos_c, _ = dataset.next_eval_data()
                 eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c,  dropout_keep_prob=1.0)
 
