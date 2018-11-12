@@ -1,10 +1,6 @@
 # Event Extraction
 
-Tensorflow Implementation of Deep Learning Approach for Event Extraction via Dynamic Multi-Pooling Convolutional Neural Networks.
-
-## Data
-
-[ACE 2005](https://catalog.ldc.upenn.edu/LDC2006T06) 
+Tensorflow Implementation of Deep Learning Approach for ACE Event Extraction (https://catalog.ldc.upenn.edu/LDC2006T06) via Dynamic Multi-Pooling Convolutional Neural Networks.
 
 ## Usage
 
@@ -12,7 +8,7 @@ Tensorflow Implementation of Deep Learning Approach for Event Extraction via Dyn
 
 "[GoogleNews-vectors-negative300](https://code.google.com/archive/p/word2vec/)" is used as pre-trained word2vec model.
 
-## TODO 
+## Todo 
 
 - Add word2vec
 - Trigger Classification performance
