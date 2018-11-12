@@ -28,3 +28,4 @@ class HyperParams_Tri_classification:
     filter_num = 100
 
     num_epochs = 20
+    lr = 1e-3
