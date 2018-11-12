@@ -3,7 +3,7 @@ import time, datetime, os
 import tensorflow as tf
 from Dataset_Trigger import Dataset_Trigger as Dataset
 
-from Config import HyperParams as hp
+from Config import HyperParams_Tri_classification as hp
 
 """
 Trigger Classification is based on the previous argument classification task's code.
