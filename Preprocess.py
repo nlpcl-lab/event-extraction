@@ -27,6 +27,7 @@ class PreprocessManager():
         for fname in fnames:
             total_res.append(self.process_one_file(fname))
         print('total_event: {}개'.format(len(total_res)))
+
         for doc in total_res:
             self.dataset += self.process_sentencewise(doc)
         print("END PREPROCESSING")
@@ -38,7 +39,9 @@ class PreprocessManager():
                                                                    len(self.arg_task_format_data)))
 
     def format_to_argument(self):
-        for d in self.dataset:
+        for item in self.dataset:
+            d = item[0]
+            fname = item[1]
             generated_candi = self.generate_argument_candidate_pos_list(d['argument_position'], d['entity_position'],
                                                                         d['trigger_position'])
             # TODO: get SeunWon's variable and change 100.
@@ -50,7 +53,7 @@ class PreprocessManager():
             if trigger_cnt>1:continue
 
             for candi in generated_candi:
-                self.arg_task_format_data.append([d['sentence']]+candi)
+                self.arg_task_format_data.append([d['sentence']]+candi+[fname])
 
     def generate_argument_candidate_pos_list(self, arg_pos, enti_pos, trigger_pos):
         cand_list = []
@@ -75,10 +78,13 @@ class PreprocessManager():
         return cand_list
 
     def format_to_trigger(self):
-        for d in self.dataset:
+        for item in self.dataset:
+            d = item[0]
+            fname = item[1]
             generated_candi = self.generate_trigger_candidate_pos_list(d['trigger_position'])
+            if len(d['sentence'])>100:continue
             for candi in generated_candi:
-                self.tri_task_format_data.append([d['sentence']]+candi)
+                self.tri_task_format_data.append([d['sentence']]+candi+[fname])
 
     def generate_trigger_candidate_pos_list(self, trigger_pos):
         cand_list = []
@@ -96,7 +102,7 @@ class PreprocessManager():
         return cand_list
 
     def process_sentencewise(self, doc):
-        entities, val_timexs, events = doc
+        entities, val_timexs, events, xml_fname = doc
         datas = []
         for event in events:
             for e_mention in event['event_mention']:
@@ -107,7 +113,7 @@ class PreprocessManager():
                 val_timexs_in_sent = self.search_valtimex_in_sentence(val_timexs, sent_pos)
                 e_mention = self.get_argument_head(entities_in_sent, e_mention)
                 res = self.packing_sentence(e_mention, tmp, sent_pos, entities_in_sent, val_timexs_in_sent)
-                if res!=1: datas.append(res)
+                if res!=1: datas.append([res,xml_fname])
         return datas
 
     @staticmethod
@@ -288,7 +294,7 @@ class PreprocessManager():
         xml_ent_res, xml_valtimex_res, xml_event_res = self.parse_one_xml(fname[1])
         # sgm_ent_res, sgm_event_res = self.parse_one_sgm(fname[0])
         # TODO : merge xml and sgm file together if need.
-        return xml_ent_res, xml_valtimex_res, xml_event_res
+        return xml_ent_res, xml_valtimex_res, xml_event_res, fname[1]
 
     def parse_one_xml(self, fname):
         tree = ET.parse(fname)
@@ -427,7 +433,7 @@ if __name__ == '__main__':
     trigger_classification_data = man.tri_task_format_data
     argument_classification_data = man.arg_task_format_data
     # print('\n\n')
-    # print(argument_classification_data[0])
+
 
     all_labels = set()
     total = 0
