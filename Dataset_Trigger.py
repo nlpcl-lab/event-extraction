@@ -32,8 +32,6 @@ class Dataset_Trigger:
         print('complete')
         self.eval_instances, self.train_instances = [],[]
         self.divide_train_eval_data()
-        self.eval_instances = self.instances[-eval_num:]
-        self.train_instances = self.instances[0:-eval_num]
         self.batch_nums = len(self.train_instances) // self.batch_size
         self.index = np.arange(len(self.train_instances))
         self.point = 0
