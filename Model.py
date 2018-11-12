@@ -45,7 +45,8 @@ class Model():
         self.input_c_pos = input_c_pos
         dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
         self.dropout_keep_prob = dropout_keep_prob
-        with tf.device('/cpu:0'), tf.name_scope("word_embedding_layer"):
+        #with tf.device('/cpu:0'), tf.name_scope("word_embedding_layer"):
+        with tf.name_scope("word_embedding_layer"):
             W_text = tf.Variable(tf.random_normal(shape=[vocab_size, word_embedding_size], mean=0.0, stddev=0.5), name="word_table")
 
             input_word_vec = tf.nn.embedding_lookup(W_text, input_x)
@@ -60,12 +61,16 @@ class Model():
                 name="candidate_pos_table")
             input_c_pos_vec = tf.nn.embedding_lookup(Can_pos, input_c_pos_c)
             # [batch_size, sentence_length, word_embedding_size+2*pos_size]
-            input_sentence_vec = tf.concat(2, [input_word_vec, input_t_pos_vec, input_c_pos_vec])
+            if int(tf.__version__.split('.')[0])>=1:
+                input_sentence_vec = tf.concat([input_word_vec, input_t_pos_vec, input_c_pos_vec],2)
+            else:
+                input_sentence_vec = tf.concat(2, [input_word_vec, input_t_pos_vec, input_c_pos_vec])
             # CNN supports 4d input, so increase the one-dimensional vector to indicate the number of input channels.
             input_sentence_vec_expanded = tf.expand_dims(input_sentence_vec, -1)
         pooled_outputs = []
         for i, filter_size in enumerate(filter_sizes):
-            with tf.device('/cpu:0'), tf.name_scope('conv-maxpool-%s' % filter_size):
+            #with tf.device('/cpu:0'), tf.name_scope('conv-maxpool-%s' % filter_size):
+            with tf.name_scope('conv-maxpool-%s' % filter_size):
                 # The current word and context of the sentence feature considered here
                 filter_shape = [filter_size, word_embedding_size + 2 * pos_embedding_size, 1, filter_num]
                 W = tf.Variable(tf.truncated_normal(filter_shape, stddev=0.1), name="W")
@@ -86,16 +91,24 @@ class Model():
                 pooled_outputs.append(pooled)
 
         num_filters_total = filter_num * len(filter_sizes)
-        h_pool = tf.concat(3, pooled_outputs)
+        if int(tf.__version__.split('.')[0]) >= 1:
+            h_pool = tf.concat(pooled_outputs, 3)
+        else:
+            h_pool = tf.concat(3, pooled_outputs)
         h_pool_flat = tf.reshape(h_pool, [-1, num_filters_total])
         lexical_vec = tf.reshape(input_word_vec, shape=(-1, sentence_length * word_embedding_size))
         # Combine lexical level features and sentence level features
-        all_input_features = tf.concat(1, [lexical_vec, h_pool_flat])
+        if int(tf.__version__.split('.')[0]) >= 1:
+            all_input_features = tf.concat([lexical_vec, h_pool_flat], 1)
+        else:
+            all_input_features = tf.concat(1, [lexical_vec, h_pool_flat])
 
-        with tf.device('/cpu:0'), tf.name_scope('dropout'):
+        #with tf.device('/cpu:0'), tf.name_scope('dropout'):
+        with tf.name_scope('dropout'):
             all_features = tf.nn.dropout(all_input_features, dropout_keep_prob)
 
-        with tf.device('/cpu:0'), tf.name_scope('softmax'):
+        #with tf.device('/cpu:0'), tf.name_scope('softmax'):
+        with tf.name_scope('softmax'):
             W = tf.Variable(tf.truncated_normal([num_filters_total + sentence_length * word_embedding_size, num_labels], stddev=0.1), name="W")
             b = tf.Variable(tf.constant(0.1, shape=[num_labels]), name="b")
             scores = tf.nn.xw_plus_b(all_features, W, b, name="scores")
@@ -103,12 +116,17 @@ class Model():
             self.scores = scores
             self.predicts = predicts
 
-        with tf.device('/cpu:0'), tf.name_scope('loss'):
-            entropy = tf.nn.softmax_cross_entropy_with_logits(scores, input_y)
+        #with tf.device('/cpu:0'), tf.name_scope('loss'):
+        with tf.name_scope('loss'):
+            if int(tf.__version__.split('.')[0]) >= 1:
+                entropy = tf.nn.softmax_cross_entropy_with_logits(labels=input_y, logits=scores)
+            else:
+                entropy = tf.nn.softmax_cross_entropy_with_logits(scores, input_y)
             loss = tf.reduce_mean(entropy)
             self.loss = loss
 
-        with tf.device('/cpu:0'), tf.name_scope("accuracy"):
+        #with tf.device('/cpu:0'), tf.name_scope("accuracy"):
+        with tf.name_scope("accuracy"):
             correct = tf.equal(predicts, tf.argmax(input_y, 1))
             accuracy = tf.reduce_mean(tf.cast(correct, "float"), name="accuracy")
             self.accuracy = accuracy
@@ -180,6 +198,7 @@ with tf.Graph().as_default():
             for j in range(len(dataset.train_instances) // hp.batch_size):
                 x, t, c, y, pos_c, pos_t, _ = dataset.next_train_data()
                 train_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c, input_t_pos=pos_t, dropout_keep_prob=0.8)
+
 
             if epoch % 5 == 0:
                 x, t, c, y, pos_c, pos_t, _ = dataset.eval_data()

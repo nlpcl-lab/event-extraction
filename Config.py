@@ -11,7 +11,7 @@ class HyperParams:
     windows = 3
     word_embedding_size = 100
     pos_embedding_size = 10
-
+    lr = 1e-3
     filter_sizes = [3, 4, 5]
     filter_num = 100
 
@@ -23,7 +23,7 @@ class HyperParams_Tri_classification:
     windows = 3
     word_embedding_size = 100
     pos_embedding_size = 10
-
+    lr = 1e-3
     filter_sizes = [3, 4, 5]
     filter_num = 100
 
