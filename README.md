@@ -66,7 +66,7 @@ $ python eval.py --checkpoint_dir "runs/1523902663/checkpoints/"
 weighted avg       0.61      0.70      0.64      3742
 ```
 
-### Trigger Classification performance
+### Trigger classification performance
 
 ```
              precision    recall  f1-score   support
