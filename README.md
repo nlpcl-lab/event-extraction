@@ -16,6 +16,7 @@ Tensorflow Implementation of Deep Learning Approach for  Event Extraction([**ACE
 
 ### Trigger Classification performance
 
+```
               precision    recall  f1-score   support
 
       Seller       0.00      0.00      0.00         4
@@ -51,9 +52,11 @@ Tensorflow Implementation of Deep Learning Approach for  Event Extraction([**ACE
    micro avg       0.70      0.70      0.70      3742
    macro avg       0.19      0.11      0.13      3742
 weighted avg       0.61      0.70      0.64      3742
-
+```
 
 ### Argument classification performance
+
+```
               precision    recall  f1-score   support
 
            3       0.00      0.00      0.00         1
@@ -69,6 +72,7 @@ weighted avg       0.61      0.70      0.64      3742
    micro avg       0.77      0.77      0.77        30
    macro avg       0.21      0.22      0.21        30
 weighted avg       0.71      0.77      0.74        30
+```
 
 ## Reference
 
