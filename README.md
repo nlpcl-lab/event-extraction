@@ -1,5 +1,14 @@
-# event-extraction
+# Event Extraction
 
+Tensorflow Implementation of Deep Learning Approach for Event Extraction via Dynamic Multi-Pooling Convolutional Neural Networks.
+
+## Data
+
+[ACE 2005](https://catalog.ldc.upenn.edu/LDC2006T06) 
+
+## Usage
+
+### Train
 
 "[GoogleNews-vectors-negative300](https://code.google.com/archive/p/word2vec/)" is used as pre-trained word2vec model.
 
@@ -111,3 +120,11 @@ predicts : [ 7  7  7  7 12  7  7  7  7  7  7  7 18 24  7  7  8  7  7  5  7  7  7
    macro avg       0.21      0.22      0.21        30
 weighted avg       0.71      0.77      0.74        30
 ```
+
+## Reference
+
+* **Event Extraction via Dynamic Multi-Pooling Convolutional Neural Networks** (IJCNLP 2015), Chen, Yubo, et al. [[paper]](https://pdfs.semanticscholar.org/ca70/480f908ec60438e91a914c1075b9954e7834.pdf)
+* zhangluoyang's cnn-for-auto-event-extract repository [[github]](https://github.com/zhangluoyang/cnn-for-auto-event-extract)
+
+
+
