@@ -72,6 +72,7 @@ class Dataset:
                 'pos_taggings': pos_taggings,
                 'marks': marks,
                 'label': label,
+                'fname':fname
             })
 
         # current word: $500 billion
