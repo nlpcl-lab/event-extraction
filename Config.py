@@ -16,3 +16,15 @@ class HyperParams:
     filter_num = 100
 
     num_epochs = 20
+
+class HyperParams_Tri_classification:
+    batch_size = 200
+    max_sequence_length = 80
+    windows = 3
+    word_embedding_size = 100
+    pos_embedding_size = 10
+
+    filter_sizes = [3, 4, 5]
+    filter_num = 100
+
+    num_epochs = 20
