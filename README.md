@@ -14,8 +14,7 @@ Tensorflow Implementation of Deep Learning Approach for  Event Extraction([**ACE
 
 ## Results
 
-### Trigger Classification performance
-
+### Argument classification performance
 ```
               precision    recall  f1-score   support
 
@@ -54,7 +53,7 @@ Tensorflow Implementation of Deep Learning Approach for  Event Extraction([**ACE
 weighted avg       0.61      0.70      0.64      3742
 ```
 
-### Argument classification performance
+### Trigger Classification performance
 
 ```
               precision    recall  f1-score   support
