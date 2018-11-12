@@ -36,7 +36,7 @@ class Dataset:
     def read_dataset(self):
         all_words, all_pos_taggings, all_labels, all_marks = [set() for _ in range(4)]
 
-        def read_one(words, marks, label):
+        def read_one(words, marks, label, fname):
             import nltk
             pos_taggings = nltk.pos_tag(words)
             pos_taggings = [pos_tagging[1] for pos_tagging in pos_taggings]
@@ -81,7 +81,7 @@ class Dataset:
         man.preprocess()
         argument_classification_data = man.arg_task_format_data
         for data in argument_classification_data:
-            read_one(words=data[0], marks=data[1], label=data[2])
+            read_one(words=data[0], marks=data[1], label=data[2], fname=data[3])
 
         all_words.add('<eos>')
         all_pos_taggings.add('*')
