@@ -92,4 +92,7 @@ weighted avg       0.71      0.77      0.74        30
 * zhangluoyang's cnn-for-auto-event-extract repository [[github]](https://github.com/zhangluoyang/cnn-for-auto-event-extract)
 
 
+## contributors
+
+ChaeHun, Seungwon
 
