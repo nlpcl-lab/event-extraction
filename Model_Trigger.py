@@ -155,7 +155,7 @@ with tf.Graph().as_default():
                       filter_num=filter_num,
                       batch_size=batch_size)
 
-        optimizer = tf.train.AdamOptimizer(1e-3)
+        optimizer = tf.train.AdamOptimizer(lr)
         grads_and_vars = optimizer.compute_gradients(model.loss)
         train_op = optimizer.apply_gradients(grads_and_vars)
 
