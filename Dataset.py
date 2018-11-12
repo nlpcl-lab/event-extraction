@@ -53,9 +53,10 @@ class Dataset:
         all_words, all_pos_taggings, all_labels, all_marks = [set() for _ in range(4)]
 
         def read_one(words, marks, label, fname):
-            import nltk
-            pos_taggings = nltk.pos_tag(words)
-            pos_taggings = [pos_tagging[1] for pos_tagging in pos_taggings]
+            # TODO: remove comments mark when use POS tag info for model. `nltk.pos_tag()` method too slow.
+            #pos_taggings = nltk.pos_tag(words)
+            #pos_taggings = [pos_tagging[1] for pos_tagging in pos_taggings]
+            pos_taggings = [None for i in range(10)]
 
             for word in words: all_words.add(word)
             for mark in marks: all_marks.add(mark)
