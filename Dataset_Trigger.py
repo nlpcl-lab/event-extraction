@@ -9,12 +9,15 @@ class Dataset_Trigger:
                  batch_size=30,
                  max_sequence_length=30,
                  windows=3,
-                 eval_num=30):
+                 eval_num=30,
+                 dtype=None):
+        assert dtype in ['IDENTIFICATION','CLASSIFICATION']
 
         self.windows = windows
         self.batch_size = batch_size
         self.max_sequence_length = max_sequence_length
         self.eval_num = eval_num
+        self.dtype = dtype
 
         self.all_words = list()
         self.all_pos_taggings = list()
@@ -79,7 +82,7 @@ class Dataset_Trigger:
 
         from Preprocess import PreprocessManager
         man = PreprocessManager()
-        man.preprocess()
+        man.preprocess(tasktype='TRIGGER',subtasktype=self.dtype)
         tri_classification_data = man.tri_task_format_data
         for data in tri_classification_data:
             read_one(words=data[0], marks=data[1], label=data[2], fname=data[3])

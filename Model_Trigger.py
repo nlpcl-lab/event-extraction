@@ -76,7 +76,6 @@ class Model():
             input_sentence_vec_expanded = tf.expand_dims(input_sentence_vec, -1)
         pooled_outputs = []
         for i, filter_size in enumerate(filter_sizes):
-#            with tf.device('/cpu:0'), tf.name_scope('conv-maxpool-%s' % filter_size):
             with tf.name_scope('conv-maxpool-%s' % filter_size):
                 # The current word and context of the sentence feature considered here
                 filter_shape = [filter_size, word_embedding_size + 1 * pos_embedding_size, 1, filter_num]
@@ -147,75 +146,80 @@ class Model():
             accuracy = tf.reduce_mean(tf.cast(correct, "float"), name="accuracy")
             self.accuracy = accuracy
 
+from Util import train_parser
+if __name__=='__main__':
+    task, subtask = train_parser()
+    assert task == 1
+    subtask_type = 'IDENTIFICATION' if subtask==1 else 'CLASSIFICATION'
 
-dataset = Dataset(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length, windows=hp.windows)
+    dataset = Dataset(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length, windows=hp.windows, dtype=subtask_type)
 
-with tf.Graph().as_default():
-    sess = tf.Session()
-    with sess.as_default():
-        model = Model(sentence_length=hp.max_sequence_length,
-                      num_labels=len(dataset.all_labels),
-                      vocab_size=len(dataset.all_words),
-                      word_embedding_size=hp.word_embedding_size,
-                      pos_embedding_size=hp.pos_embedding_size,
-                      filter_sizes=hp.filter_sizes,
-                      filter_num=hp.filter_num,
-                      batch_size=hp.batch_size)
+    with tf.Graph().as_default():
+        sess = tf.Session()
+        with sess.as_default():
+            model = Model(sentence_length=hp.max_sequence_length,
+                          num_labels=len(dataset.all_labels),
+                          vocab_size=len(dataset.all_words),
+                          word_embedding_size=hp.word_embedding_size,
+                          pos_embedding_size=hp.pos_embedding_size,
+                          filter_sizes=hp.filter_sizes,
+                          filter_num=hp.filter_num,
+                          batch_size=hp.batch_size)
 
-        optimizer = tf.train.AdamOptimizer(hp.lr)
-        grads_and_vars = optimizer.compute_gradients(model.loss)
-        train_op = optimizer.apply_gradients(grads_and_vars)
+            optimizer = tf.train.AdamOptimizer(hp.lr)
+            grads_and_vars = optimizer.compute_gradients(model.loss)
+            train_op = optimizer.apply_gradients(grads_and_vars)
 
-        # TODO: after train, do save
-        # timestamp = str(int(time.time()))
-        # out_dir = os.path.abspath(os.path.join(os.path.curdir, "model_01", timestamp))
-        # print("Writing to {}\n".format(out_dir))
-        # checkpoint_dir = os.path.abspath(os.path.join(out_dir, "checkpoints"))
-        # checkpoint_prefix = os.path.join(checkpoint_dir, "model")
-        # if not os.path.exists(checkpoint_dir): os.makedirs(checkpoint_dir)
-        # saver = tf.train.Saver(tf.all_variables(), max_to_keep=20)
-        sess.run(tf.initialize_all_variables())
-
-
-        def train_step(input_x, input_y, input_c, input_c_pos, dropout_keep_prob):
-            feed_dict = {
-                model.input_x: input_x,
-                model.input_y: input_y,
-                model.input_c_pos: input_c_pos,
-                model.dropout_keep_prob: dropout_keep_prob,
-            }
-            _, loss, accuracy = sess.run([train_op, model.loss, model.accuracy], feed_dict)
-            time_str = datetime.datetime.now().isoformat()
-            print("{}: loss {:g}, acc {:g}".format(time_str, loss, accuracy))
+            # TODO: after train, do save
+            # timestamp = str(int(time.time()))
+            # out_dir = os.path.abspath(os.path.join(os.path.curdir, "model_01", timestamp))
+            # print("Writing to {}\n".format(out_dir))
+            # checkpoint_dir = os.path.abspath(os.path.join(out_dir, "checkpoints"))
+            # checkpoint_prefix = os.path.join(checkpoint_dir, "model")
+            # if not os.path.exists(checkpoint_dir): os.makedirs(checkpoint_dir)
+            # saver = tf.train.Saver(tf.all_variables(), max_to_keep=20)
+            sess.run(tf.initialize_all_variables())
 
 
-        def eval_step(input_x, input_y, input_c, input_c_pos, dropout_keep_prob):
-            feed_dict = {
-                model.input_x: input_x,
-                model.input_y: input_y,
-                model.input_c_pos: input_c_pos,
-                model.dropout_keep_prob: dropout_keep_prob,
-            }
-            accuracy, predicts = sess.run([model.accuracy, model.predicts], feed_dict)
-            print("eval accuracy:{}".format(accuracy))
-            print("input_y : ", [np.argmax(item) for item in input_y], ', predicts :', predicts)
-            print(classification_report([np.argmax(item) for item in input_y], predicts))#, target_names=dataset.all_labels))
-            print("Precision: {}\nRecall: {}\nAccuracy  :  {}".format(
-                precision_score([np.argmax(item) for item in input_y], predicts, average='weighted'),
-                recall_score([np.argmax(item) for item in input_y], predicts, average='weighted'),
-                accuracy_score([np.argmax(item) for item in input_y], predicts)))
-            return predicts
+            def train_step(input_x, input_y, input_c, input_c_pos, dropout_keep_prob):
+                feed_dict = {
+                    model.input_x: input_x,
+                    model.input_y: input_y,
+                    model.input_c_pos: input_c_pos,
+                    model.dropout_keep_prob: dropout_keep_prob,
+                }
+                _, loss, accuracy = sess.run([train_op, model.loss, model.accuracy], feed_dict)
+                time_str = datetime.datetime.now().isoformat()
+                print("{}: loss {:g}, acc {:g}".format(time_str, loss, accuracy))
 
 
-        for epoch in range(hp.num_epochs):
-            print('epoch: {}/{}'.format(epoch + 1, hp.num_epochs))
-            for j in range(len(dataset.train_instances) // hp.batch_size):
-                x, c, y, pos_c, _ = dataset.next_train_data()
-                train_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=0.8)
-            if epoch % 3 == 0:
-                x, c, y, pos_c, _ = dataset.next_eval_data()
-                eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=1.0)
+            def eval_step(input_x, input_y, input_c, input_c_pos, dropout_keep_prob):
+                feed_dict = {
+                    model.input_x: input_x,
+                    model.input_y: input_y,
+                    model.input_c_pos: input_c_pos,
+                    model.dropout_keep_prob: dropout_keep_prob,
+                }
+                accuracy, predicts = sess.run([model.accuracy, model.predicts], feed_dict)
+                print("eval accuracy:{}".format(accuracy))
+                print("input_y : ", [np.argmax(item) for item in input_y], ', predicts :', predicts)
+                print(classification_report([np.argmax(item) for item in input_y], predicts))#, target_names=dataset.all_labels))
+                print("Precision: {}\nRecall: {}\nAccuracy  :  {}".format(
+                    precision_score([np.argmax(item) for item in input_y], predicts, average='weighted'),
+                    recall_score([np.argmax(item) for item in input_y], predicts, average='weighted'),
+                    accuracy_score([np.argmax(item) for item in input_y], predicts)))
+                return predicts
 
-        print("----test results---------------------------------------------------------------------")
-        x, c, y, pos_c, _ = dataset.next_eval_data()
-        predicts = eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=1.0)
+
+            for epoch in range(hp.num_epochs):
+                print('epoch: {}/{}'.format(epoch + 1, hp.num_epochs))
+                for j in range(len(dataset.train_instances) // hp.batch_size):
+                    x, c, y, pos_c, _ = dataset.next_train_data()
+                    train_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=0.8)
+                if epoch % 3 == 0:
+                    x, c, y, pos_c, _ = dataset.next_eval_data()
+                    eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=1.0)
+
+            print("----test results---------------------------------------------------------------------")
+            x, c, y, pos_c, _ = dataset.next_eval_data()
+            predicts = eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=1.0)

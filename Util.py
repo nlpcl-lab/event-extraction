@@ -1,5 +1,6 @@
 import argparse
 
+
 def train_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('task',help='Trigger:1 Argument:2',type=int, choices=[1,2])

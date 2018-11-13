@@ -17,7 +17,7 @@ class PreprocessManager():
         self.tri_task_format_data = []
         self.arg_task_format_data = []
 
-    def preprocess(self):
+    def preprocess(self, tasktype, subtasktype):
         '''
         Overall Iterator for whole dataset
         '''
@@ -32,8 +32,10 @@ class PreprocessManager():
             self.dataset += self.process_sentencewise(doc)
         print("END PREPROCESSING")
         print('TOTAL DATA :  {}'.format(len(self.dataset)))
-        self.format_to_trigger()
-        self.format_to_argument()
+        if tasktype=='TRIGGER':
+            self.format_to_trigger(subtasktype)
+        else:
+            self.format_to_argument()
 
         print('TRIGGER DATASET: {}\nARGUMENT DATASET: {}\n'.format(len(self.tri_task_format_data),
                                                                    len(self.arg_task_format_data)))
