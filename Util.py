@@ -1,11 +1,13 @@
 import argparse
 
-class train_parser():
+def train_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('task',help='Trigger or Argument',type=int)
-    parser.add_argument('subtask',help='Identification or Classification',type=int)
-    parser.parse_args()
-
+    parser.add_argument('task',help='Trigger:1 Argument:2',type=int, choices=[1,2])
+    parser.add_argument('subtask',help='Identification:1 Classification:2',type=int, choices=[1,2])
+    args = parser.parse_args()
+    task = args.task
+    subtask = args.subtask
+    return task,subtask
 
 
 def find_candidates(items1, items2):
