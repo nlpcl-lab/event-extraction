@@ -35,6 +35,7 @@ class Dataset:
         self.batch_nums = len(self.train_instances) // self.batch_size
         self.index = np.arange(len(self.train_instances))
         self.point = 0
+        print('all label for dataset: {}'.format(len(self.all_labels)))
 
     def divide_train_eval_data(self):
         testset_fname = []
