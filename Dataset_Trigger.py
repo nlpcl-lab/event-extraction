@@ -1,3 +1,4 @@
+import random
 import numpy as np
 from Util import one_hot, find_candidates
 
@@ -47,6 +48,7 @@ class Dataset_Trigger:
                 self.eval_instances.append(ins)
 
         print('TRAIN: {} TEST: {}'.format(len(self.train_instances),len(self.eval_instances)))
+        random.shuffle(self.train_instances)
         assert len(self.instances)==(len(self.train_instances)+len(self.eval_instances))
 
 

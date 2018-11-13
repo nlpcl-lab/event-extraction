@@ -1,6 +1,7 @@
 import numpy as np
 import time, datetime, os
 import tensorflow as tf
+from sklearn.metrics import classification_report, precision_score, recall_score, accuracy_score
 from Dataset_Trigger import Dataset_Trigger as Dataset
 
 from Config import HyperParams_Tri_classification as hp
@@ -196,10 +197,13 @@ with tf.Graph().as_default():
                 model.dropout_keep_prob: dropout_keep_prob,
             }
             accuracy, predicts = sess.run([model.accuracy, model.predicts], feed_dict)
-            from sklearn.metrics import classification_report
             print("eval accuracy:{}".format(accuracy))
             print("input_y : ", [np.argmax(item) for item in input_y], ', predicts :', predicts)
             print(classification_report([np.argmax(item) for item in input_y], predicts))#, target_names=dataset.all_labels))
+            print("Precision: {}\nRecall: {}\nAccuracy  :  {}".format(
+                precision_score([np.argmax(item) for item in input_y], predicts, average='weighted'),
+                recall_score([np.argmax(item) for item in input_y], predicts, average='weighted'),
+                accuracy_score([np.argmax(item) for item in input_y], predicts)))
             return predicts
 
 
