@@ -114,6 +114,7 @@ if __name__=='__main__':
                 return predicts
 
             print("TRAIN START")
+            #  About Trigger
             if task==1:
                 for epoch in range(hp.num_epochs):
                     print('epoch: {}/{}'.format(epoch + 1, hp.num_epochs))
@@ -127,8 +128,9 @@ if __name__=='__main__':
                 print("----test results---------------------------------------------------------------------")
                 x, c, y, pos_c, _ = dataset.next_eval_data()
                 predicts = trigger_eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=1.0)
-            if task==2:
 
+            #  About Argument
+            if task==2:
                 for epoch in range(hp.num_epochs):
                     print('epoch: {}/{}'.format(epoch + 1, hp.num_epochs))
                     for j in range(len(dataset.train_instances) // hp.batch_size):
