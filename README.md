@@ -11,19 +11,23 @@ Tensorflow Implementation of Deep Learning Approach for  Event Extraction([**ACE
 
 ##### Train Example:
 ```bash
-$ python train.py --embedding_path "GoogleNews-vectors-negative300.bin"
+$ python Script.py {taskID} {subtaskID}
 ```
+* `taskID`: 1 for Trigger, 2 for Argument
 
-### Evaluation
+* `subtaskID`: 1 for Identification, 2 for Classification
 
-##### Evaluation Example:
+* After model training, evaluation results will be shown.
+
 ```bash
-$ python eval.py --checkpoint_dir "runs/1523902663/checkpoints/"
+$ python Script.py 1 2  # Script for `Trigger Classification`
 ```
 
 ## Todo 
 
 - Add word2vec
+
+- Evaluation Script
 
 ## Results
 
