@@ -91,16 +91,20 @@ class PreprocessManager():
         for item in self.dataset:
             d = item[0]
             fname = item[1]
-            generated_candi = self.generate_trigger_candidate_pos_list(d['trigger_position'], subtasktype)
+            generated_candi = self.generate_trigger_candidate_pos_list(d['trigger_position'], d['entity_position'], subtasktype)
             if len(d['sentence'])>100:continue
             for candi in generated_candi:
+                # Except the 'None' label at classification
+                if subtasktype == 'CLASSIFICATION' and candi[1] == 'None': continue
                 self.tri_task_format_data.append([d['sentence']]+candi+[fname])
 
-    def generate_trigger_candidate_pos_list(self, trigger_pos, subtasktype):
+    def generate_trigger_candidate_pos_list(self, trigger_pos, entity_pos, subtasktype):
         cand_list = []
         idx_list = []
         for idx,el in enumerate(trigger_pos):
             if el!='*': idx_list.append((idx,el))
+
+        assert len(entity_pos)==len(trigger_pos)
 
         for idx in range(len(trigger_pos)):
             marks = ['A' for i in range(len(trigger_pos))]
@@ -108,7 +112,7 @@ class PreprocessManager():
             label = 'None'
             for i in idx_list:
                 if idx == i[0]:
-                    label = i[1] if subtasktype=='CLASSIFICATION' else 'TRIGGER'  # Identification case
+                    label = i[1] if subtasktype=='CLASSIFICATION' else 'TRIGGER'  # else: Identification case
             cand_list.append([marks,label])
         return cand_list
 
@@ -241,7 +245,10 @@ class PreprocessManager():
                             trigger_idx.append(idx)
 
         for el in trigger_idx:
-            trigger_type_label[el] = tmp['TYPE']+'/'+tmp['SUBTYPE']
+            trigger_type_label[el] = tmp['TYPE'] + '/' + tmp['SUBTYPE']
+
+            # # TODO: Check Result
+            # trigger_type_label[el] = tmp['TYPE']
 
         assert len(good_entity_mark_list)==len(good_token_list)==len(trigger_type_label)==len(argument_role_label)
         packed_data['sentence'] = good_token_list
