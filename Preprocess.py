@@ -84,16 +84,16 @@ class PreprocessManager():
             cand_list.append([marks,label])
         return cand_list
 
-    def format_to_trigger(self):
+    def format_to_trigger(self, subtasktype):
         for item in self.dataset:
             d = item[0]
             fname = item[1]
-            generated_candi = self.generate_trigger_candidate_pos_list(d['trigger_position'])
+            generated_candi = self.generate_trigger_candidate_pos_list(d['trigger_position'], subtasktype)
             if len(d['sentence'])>100:continue
             for candi in generated_candi:
                 self.tri_task_format_data.append([d['sentence']]+candi+[fname])
 
-    def generate_trigger_candidate_pos_list(self, trigger_pos):
+    def generate_trigger_candidate_pos_list(self, trigger_pos, subtasktype):
         cand_list = []
         idx_list = []
         for idx,el in enumerate(trigger_pos):
@@ -104,7 +104,8 @@ class PreprocessManager():
             marks[idx]='B'
             label = 'None'
             for i in idx_list:
-                if idx == i[0]: label = i[1]
+                if idx == i[0]:
+                    label = i[1] if subtasktype=='CLASSIFICATION' else 'TRIGGER'  # Identification case
             cand_list.append([marks,label])
         return cand_list
 
