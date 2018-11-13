@@ -210,7 +210,7 @@ if __name__=='__main__':
                     accuracy_score([np.argmax(item) for item in input_y], predicts)))
                 return predicts
 
-
+            print("TRAIN START")
             for epoch in range(hp.num_epochs):
                 print('epoch: {}/{}'.format(epoch + 1, hp.num_epochs))
                 for j in range(len(dataset.train_instances) // hp.batch_size):

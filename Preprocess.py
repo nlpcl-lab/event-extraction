@@ -34,18 +34,20 @@ class PreprocessManager():
         print('TOTAL DATA :  {}'.format(len(self.dataset)))
         if tasktype=='TRIGGER':
             self.format_to_trigger(subtasktype)
+        elif tasktype=='ARGUMENT':
+            self.format_to_argument(subtasktype)
         else:
-            self.format_to_argument()
+            raise ValueError
 
         print('TRIGGER DATASET: {}\nARGUMENT DATASET: {}\n'.format(len(self.tri_task_format_data),
                                                                    len(self.arg_task_format_data)))
 
-    def format_to_argument(self):
+    def format_to_argument(self, subtasktype):
         for item in self.dataset:
             d = item[0]
             fname = item[1]
             generated_candi = self.generate_argument_candidate_pos_list(d['argument_position'], d['entity_position'],
-                                                                        d['trigger_position'])
+                                                                        d['trigger_position'], subtasktype)
             # TODO: get SeunWon's variable and change 100.
             if len(d['sentence'])>100:continue
 
@@ -57,7 +59,7 @@ class PreprocessManager():
             for candi in generated_candi:
                 self.arg_task_format_data.append([d['sentence']]+candi+[fname])
 
-    def generate_argument_candidate_pos_list(self, arg_pos, enti_pos, trigger_pos):
+    def generate_argument_candidate_pos_list(self, arg_pos, enti_pos, trigger_pos, subtasktype):
         cand_list = []
         Entity_as_candidate_only = True  # Entity만 Candidates로 사용
 
@@ -81,6 +83,7 @@ class PreprocessManager():
             Time-After,  Time-At-End,  Time-Ending , Time-Holds , Time-At-Beginning, Time-Before,  Time-Within, Time-Starting to Time
             '''
             if 'Time-' in label: label = 'Time'
+            if subtasktype=='IDENTIFICATION' and label!='None':label = 'ARGUMENT'
             cand_list.append([marks,label])
         return cand_list
 
