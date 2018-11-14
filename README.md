@@ -32,6 +32,25 @@ $ python Script.py 1 2  # Script for `Trigger Classification`
 
 ## Results
 
+### Trigger classification performance
+
+```
+             precision    recall  f1-score   support
+
+        Life       0.75      0.70      0.72       114
+     Justice       0.78      0.85      0.81       114
+    Movement       0.69      0.70      0.69        53
+   Personnel       0.68      0.64      0.66        78
+    Business       0.75      0.46      0.57        13
+    Conflict       0.78      0.83      0.80       247
+     Contact       0.79      0.86      0.83        36
+ Transaction       1.00      0.48      0.65        27
+
+   micro avg       0.76      0.76      0.76       682
+   macro avg       0.78      0.69      0.72       682
+weighted avg       0.76      0.76      0.76       682
+```
+
 ### Argument classification performance
 ```
               precision    recall  f1-score   support
@@ -69,47 +88,6 @@ $ python Script.py 1 2  # Script for `Trigger Classification`
    micro avg       0.70      0.70      0.70      3742
    macro avg       0.19      0.11      0.13      3742
 weighted avg       0.61      0.70      0.64      3742
-```
-
-### Trigger classification performance
-
-```
-             precision    recall  f1-score   support
-
-           1       0.40      0.36      0.38        11
-           2       0.00      0.00      0.00         7
-           3       0.61      0.40      0.48        35
-           4       1.00      0.17      0.29         6
-           5       0.00      0.00      0.00         1
-           6       0.33      0.08      0.13        12
-           7       0.50      0.13      0.21        15
-           8       0.00      0.00      0.00         4
-           9       0.29      0.41      0.34        29
-          11       0.00      0.00      0.00         6
-          12       0.00      0.00      0.00        10
-          13       0.75      0.30      0.43        10
-          14       0.43      0.18      0.25        73
-          15       0.18      0.10      0.13        20
-          16       0.00      0.00      0.00         5
-          17       0.50      0.21      0.30        14
-          18       0.00      0.00      0.00         5
-          19       0.67      0.11      0.18        19
-          20       0.45      0.38      0.42        13
-          21       0.00      0.00      0.00         1
-          23       0.48      0.40      0.44       181
-          24       0.00      0.00      0.00         4
-          25       0.00      0.00      0.00        10
-          27       0.25      0.04      0.06        27
-          28       0.00      0.00      0.00         1
-          29       0.00      0.00      0.00         3
-          30       0.00      0.00      0.00         2
-          31       0.00      0.00      0.00         1
-          32       0.97      0.99      0.98     12966
-          33       0.00      0.00      0.00        13
-
-   micro avg       0.96      0.96      0.96     13504
-   macro avg       0.26      0.14      0.17     13504
-weighted avg       0.95      0.96      0.95     13504
 ```
 
 ## References
