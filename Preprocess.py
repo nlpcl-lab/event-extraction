@@ -1,7 +1,7 @@
 import os
 import xml.etree.ElementTree as ET
 import pickle
-from Config import MyConfig
+from Config import MyConfig, HyperParams_Tri_classification as hp_f
 import pprint
 from bs4 import BeautifulSoup
 import json
@@ -92,9 +92,9 @@ class PreprocessManager():
             d = item[0]
             fname = item[1]
             generated_candi = self.generate_trigger_candidate_pos_list(d['trigger_position'], d['entity_position'], subtasktype)
-            if len(d['sentence'])>80:continue
+            if len(d['sentence'])>hp_f.max_sequence_length:continue
             for candi in generated_candi:
-                # Except the 'None' label at classification
+                # Whether except the 'None' label at classification
                 # if subtasktype == 'CLASSIFICATION' and candi[1] == 'None': continue
                 self.tri_task_format_data.append([d['sentence']]+candi+[fname]+[d['entity_position']])
 

@@ -3,7 +3,7 @@ import pickle, os
 import numpy as np
 import nltk
 from Util import one_hot, find_candidates
-from Config import MyConfig,HyperParams_Tri_classification
+from Config import MyConfig,HyperParams_Tri_classification as hp_f
 
 class Dataset_Trigger:
     def __init__(self,
@@ -123,8 +123,8 @@ class Dataset_Trigger:
             for pos_tag in pos_taggings: all_pos_taggings.add(pos_tag)
             all_labels.add(label)
 
-            if len(words) >80:
-                #print('len(word) > 80, Goodbye! ', len(words), words)
+            if len(words) > hp_f.max_sequence_length:
+                #print('len(word) > {}, Goodbye! '.format(hp_f.max_sequence_length), len(words), words)
                 return None
 
             res = {
@@ -142,7 +142,7 @@ class Dataset_Trigger:
         tri_classification_data = man.tri_task_format_data
 
         total_instance = []
-        dump_instance_fname = './data/trigger_instance.txt'
+        dump_instance_fname = './data/trigger_maxlen_{}_instance.txt'.format(hp_f.max_sequence_length)
 
         if os.path.exists(dump_instance_fname):
             print('use previous instance data for trigger task')
@@ -156,8 +156,7 @@ class Dataset_Trigger:
         else:
             print('Read {} data....'.format(len(tri_classification_data)))
             for idx,data in enumerate(tri_classification_data):
-                if (100*idx/len(tri_classification_data))%10==0:
-                    print('{}%...'.format(round((100*idx/len(tri_classification_data)), 2)))
+                if idx%1000==0: print('{}/{}'.format(idx,len(tri_classification_data)))
                 res = read_one(words=data[0], marks=data[1], label=data[2], fname=data[3], entity_mark=data[4])
                 if res is not None: total_instance.append(res)
             with open(dump_instance_fname,'wb') as f:
