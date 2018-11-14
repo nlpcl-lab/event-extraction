@@ -22,7 +22,8 @@ class Model():
                  pos_embedding_size=10,
                  filter_sizes=[3, 4, 5],
                  filter_num=200,
-                 batch_size=10
+                 batch_size=10,
+                 embed_matrx=None
                  ):
         """
         :param sentence_length
@@ -34,6 +35,8 @@ class Model():
         :param filter_sizes
         :param filter_num
         """
+
+
         # TODO: Check whether batch size can determined arbitrary in <1.0.0 version.
         batch_size = None
         # [batch_size, sentence_length]
@@ -49,12 +52,13 @@ class Model():
 
         dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
         self.dropout_keep_prob = dropout_keep_prob
-        #with tf.device('/cpu:0'), tf.name_scope("word_embedding_layer"):
+
         with tf.name_scope("word_embedding_layer"):
             # [vocab_size, embedding_size]
-            # TODO: Word2Vec lookup table
-            W_text = tf.Variable(tf.random_normal(shape=[vocab_size, word_embedding_size], mean=0.0, stddev=0.5), name="word_table")
 
+            # TODO: Word2Vec lookup table
+            #W_text = tf.Variable(tf.random_normal(shape=[vocab_size, word_embedding_size], mean=0.0, stddev=0.5), name="word_table")
+            W_text = tf.Variable(embed_matrx, trainable=False, dtype=tf.float32, name='word_embedding')
             input_word_vec = tf.nn.embedding_lookup(W_text, input_x)
 
             Tri_pos = tf.Variable(

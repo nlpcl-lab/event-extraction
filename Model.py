@@ -20,7 +20,8 @@ class Model():
                  pos_embedding_size=10,
                  filter_sizes=[3, 4, 5],
                  filter_num=200,
-                 batch_size=10
+                 batch_size=10,
+                 embed_matrx=None
                  ):
         """
         :param sentence_length

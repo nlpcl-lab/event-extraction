@@ -37,11 +37,13 @@ if __name__=='__main__':
                           pos_embedding_size=hp.pos_embedding_size,
                           filter_sizes=hp.filter_sizes,
                           filter_num=hp.filter_num,
-                          batch_size=hp.batch_size)
+                          batch_size=hp.batch_size,
+                          embed_matrx=dataset.word_embed)
 
             optimizer = tf.train.AdamOptimizer(hp.lr)
             grads_and_vars = optimizer.compute_gradients(model.loss)
             train_op = optimizer.apply_gradients(grads_and_vars)
+
 
             # TODO: after train, do save
             # timestamp = str(int(time.time()))
@@ -74,12 +76,18 @@ if __name__=='__main__':
                 }
                 accuracy, predicts = sess.run([model.accuracy, model.predicts], feed_dict)
                 print("eval accuracy:{}".format(accuracy))
-                #print("input_y : ", [np.argmax(item) for item in input_y], ', predicts :', predicts)
+
                 print(classification_report([np.argmax(item) for item in input_y], predicts, target_names=dataset.all_labels))
-                print("Precision: {}\nRecall: {}\nAccuracy  :  {}".format(
-                    precision_score([np.argmax(item) for item in input_y], predicts, average='weighted'),
-                    recall_score([np.argmax(item) for item in input_y], predicts, average='weighted'),
-                    accuracy_score([np.argmax(item) for item in input_y], predicts)))
+                average_policy = 'weighted'
+                pre, rec, acc = precision_score([np.argmax(item) for item in input_y], predicts,
+                                                average=average_policy), recall_score([np.argmax(item) for item in input_y],
+                                                                                  predicts,
+                                                                                  average=average_policy), accuracy_score(
+                    [np.argmax(item) for item in input_y], predicts)
+
+
+                print("Precision: {}\nRecall: {}\nAccuracy  :  {}".format(pre,rec,acc))
+
                 return predicts
 
 

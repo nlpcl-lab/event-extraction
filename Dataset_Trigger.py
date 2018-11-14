@@ -1,7 +1,7 @@
 import random
 import numpy as np
 from Util import one_hot, find_candidates
-
+from Config import MyConfig,HyperParams_Tri_classification
 
 class Dataset_Trigger:
     def __init__(self,
@@ -33,6 +33,9 @@ class Dataset_Trigger:
         print('read data...',end=' ')
         self.read_dataset()
         print('complete')
+
+        self.word_embed = self.embed_manager()
+
         self.eval_instances, self.train_instances = [],[]
         self.divide_train_eval_data()
         self.batch_nums = len(self.train_instances) // self.batch_size
@@ -40,12 +43,28 @@ class Dataset_Trigger:
         self.point = 0
         print('all label for dataset: {}'.format(len(self.all_labels)))
 
+    def embed_manager(self):
+        matrx = np.zeros([len(self.all_words), HyperParams_Tri_classification.word_embedding_size])
+
+        for idx,word in enumerate(self.all_words):
+
+
+    def load_glove(self):
+        with open(MyConfig.glove_txt_path,'r',encoding='utf8') as f:
+            ls = f.readlines()
+            print(ls[0])
+
+
     def divide_train_eval_data(self):
         testset_fname = []
+
+        # select test set randomly
+        random.shuffle(self.instances)
+
         for ins in self.instances:
-            if 'nw/adj' not in ins['fname']: self.train_instances.append(ins)
-            elif ins['fname'] in testset_fname: self.eval_instances.append(ins)
-            elif len(testset_fname)>40: self.train_instances.append(ins)
+            #if 'nw/adj' not in ins['fname']: self.train_instances.append(ins)
+            if ins['fname'] in testset_fname: self.eval_instances.append(ins)
+            elif len(testset_fname)>45: self.train_instances.append(ins)
             else:
                 testset_fname.append(ins['fname'])
                 self.eval_instances.append(ins)
@@ -88,6 +107,7 @@ class Dataset_Trigger:
             read_one(words=data[0], marks=data[1], label=data[2], fname=data[3])
 
         all_words.add('<eos>')
+        all_words.add('<unk>')
         all_pos_taggings.add('*')
 
         self.word_id = dict(zip(all_words, range(len(all_words))))

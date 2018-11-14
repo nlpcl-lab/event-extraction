@@ -30,6 +30,9 @@ class Dataset:
         self.label_id = dict()
 
         self.read_dataset()
+
+        self.word_embed = None
+
         self.train_instances, self.eval_instances = [],[]
         self.divide_train_eval_data()
         self.batch_nums = len(self.train_instances) // self.batch_size

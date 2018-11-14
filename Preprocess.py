@@ -245,7 +245,7 @@ class PreprocessManager():
                             trigger_idx.append(idx)
 
         for el in trigger_idx:
-            trigger_type_label[el] = tmp['TYPE'] + '/' + tmp['SUBTYPE']
+            trigger_type_label[el] = tmp['TYPE'] #+ '/' + tmp['SUBTYPE']
 
             # # TODO: Check Result
             # trigger_type_label[el] = tmp['TYPE']
