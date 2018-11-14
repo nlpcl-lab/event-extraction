@@ -142,7 +142,7 @@ class Dataset_Trigger:
         tri_classification_data = man.tri_task_format_data
 
         total_instance = []
-        dump_instance_fname = './data/trigger_instance.txt'
+        dump_instance_fname = './data/trigger_maxlen_{}_instance.txt'.format(HyperParams_Tri_classification.max_sequence_length)
 
         if os.path.exists(dump_instance_fname):
             print('use previous instance data for trigger task')
@@ -156,8 +156,7 @@ class Dataset_Trigger:
         else:
             print('Read {} data....'.format(len(tri_classification_data)))
             for idx,data in enumerate(tri_classification_data):
-                if (100*idx/len(tri_classification_data))%10==0:
-                    print('{}%...'.format(round((100*idx/len(tri_classification_data)), 2)))
+                if idx%1000==0: print('{}/{}'.format(idx,len(tri_classification_data)))
                 res = read_one(words=data[0], marks=data[1], label=data[2], fname=data[3], entity_mark=data[4])
                 if res is not None: total_instance.append(res)
             with open(dump_instance_fname,'wb') as f:
