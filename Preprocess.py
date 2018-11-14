@@ -48,8 +48,8 @@ class PreprocessManager():
             fname = item[1]
             generated_candi = self.generate_argument_candidate_pos_list(d['argument_position'], d['entity_position'],
                                                                         d['trigger_position'], subtasktype)
-            # TODO: get SeunWon's variable and change 100.
-            if len(d['sentence'])>100:continue
+
+            if len(d['sentence'])>80:continue
 
             trigger_cnt = 0
             for m in d['trigger_position']:
@@ -92,7 +92,7 @@ class PreprocessManager():
             d = item[0]
             fname = item[1]
             generated_candi = self.generate_trigger_candidate_pos_list(d['trigger_position'], d['entity_position'], subtasktype)
-            if len(d['sentence'])>100:continue
+            if len(d['sentence'])>80:continue
             for candi in generated_candi:
                 # Except the 'None' label at classification
                 if subtasktype == 'CLASSIFICATION' and candi[1] == 'None': continue
@@ -245,10 +245,7 @@ class PreprocessManager():
                             trigger_idx.append(idx)
 
         for el in trigger_idx:
-            trigger_type_label[el] = tmp['TYPE']# + '/' + tmp['SUBTYPE']
-
-            # # TODO: Check Result
-            # trigger_type_label[el] = tmp['TYPE']
+            trigger_type_label[el] = tmp['TYPE'] + '/' + tmp['SUBTYPE']
 
         assert len(good_entity_mark_list)==len(good_token_list)==len(trigger_type_label)==len(argument_role_label)
         packed_data['sentence'] = good_token_list

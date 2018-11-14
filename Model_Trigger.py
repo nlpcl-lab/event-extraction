@@ -25,6 +25,8 @@ class Model():
                  batch_size=10,
                  embed_matrx=None
                  ):
+
+
         """
         :param sentence_length
         :param num_labels
