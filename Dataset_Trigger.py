@@ -1,5 +1,6 @@
 import random
 import numpy as np
+import nltk
 from Util import one_hot, find_candidates
 from Config import MyConfig,HyperParams_Tri_classification
 
@@ -96,15 +97,19 @@ class Dataset_Trigger:
         random.shuffle(self.train_instances)
         assert len(self.instances)==(len(self.train_instances)+len(self.eval_instances))
 
+    def manage_entity_in_POS_ste(self):
+        pass
+
 
     def read_dataset(self):
         all_words, all_pos_taggings, all_labels, all_marks = [set() for _ in range(4)]
 
         def read_one(words, marks, label, fname):
-            # TODO: remove comments mark when use POS tag info for model. `nltk.pos_tag()` method too slow.
-            #pos_taggings = nltk.pos_tag(words)
-            #pos_taggings = [pos_tagging[1] for pos_tagging in pos_taggings]
-            pos_taggings = [None for i in range(1)]
+            pos_taggings = nltk.pos_tag(words)
+            pos_taggings = [pos_tagging[1] for pos_tagging in pos_taggings]
+
+            assert len(pos_taggings) == len(words)
+
             for word in words: all_words.add(word)
             for mark in marks: all_marks.add(mark)
             for pos_tag in pos_taggings: all_pos_taggings.add(pos_tag)

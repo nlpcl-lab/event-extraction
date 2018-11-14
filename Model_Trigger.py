@@ -27,7 +27,6 @@ class Model():
                  ):
 
         tf_version_checker = int(tf.__version__.split('.')[0])
-
         """
         :param sentence_length
         :param num_labels
@@ -59,7 +58,6 @@ class Model():
         with tf.name_scope("word_embedding_layer"):
             # [vocab_size, embedding_size]
 
-            # TODO: Word2Vec lookup table
             if embed_matrx is None:  # use randomly initialized matrix as word embedding
                 W_text = tf.Variable(tf.random_normal(shape=[vocab_size, word_embedding_size], mean=0.0, stddev=0.5), name="word_table")
             else:  # pre-trained word embedding matrx

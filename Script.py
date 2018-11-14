@@ -13,19 +13,20 @@ if __name__=='__main__':
     subtask_type = 'IDENTIFICATION' if subtask==1 else 'CLASSIFICATION'
     hp, dataset, Model = [None for _ in range(3)]
 
-    #TODO: REMOVE THIS AND IMPLEMENT TENSORBAORD DEBUG SYSTEM
-    acc_memory = [0,0,0]
-
     if task==1:
         hp = hp_trigger
         dataset = TRIGGER_DATASET(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length,
                                   windows=hp.windows, dtype=subtask_type)
         from Model_Trigger import Model
+        print("\n\nTrigger {} start.\n\n".format(subtask_type))
     if task==2:
         hp = hp_argument
         dataset = ARGUMENT_DATASET(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length,
                                    windows=hp.windows, dtype=subtask_type)
         from Model import Model
+        print("\n\nArgument {} start.\n\n".format(subtask_type))
+
+
 
     with tf.Graph().as_default():
         sess = tf.Session()
@@ -55,11 +56,12 @@ if __name__=='__main__':
             # saver = tf.train.Saver(tf.all_variables(), max_to_keep=20)
             sess.run(tf.initialize_all_variables())
 
-            def trigger_train_step(input_x, input_y, input_c, input_c_pos, dropout_keep_prob):
+            def trigger_train_step(input_x, input_y, input_c, input_c_pos, input_pos_tag, dropout_keep_prob):
                 feed_dict = {
                     model.input_x: input_x,
                     model.input_y: input_y,
                     model.input_c_pos: input_c_pos,
+                    model.input_pos_tag: input_pos_tag,
                     model.dropout_keep_prob: dropout_keep_prob,
                 }
                 _, loss, accuracy = sess.run([train_op, model.loss, model.accuracy], feed_dict)
@@ -67,11 +69,12 @@ if __name__=='__main__':
                 #print("{}: loss {:g}, acc {:g}".format(time_str, loss, accuracy))
 
 
-            def trigger_eval_step(input_x, input_y, input_c, input_c_pos, dropout_keep_prob):
+            def trigger_eval_step(input_x, input_y, input_c, input_c_pos, input_pos_tag, dropout_keep_prob):
                 feed_dict = {
                     model.input_x: input_x,
                     model.input_y: input_y,
                     model.input_c_pos: input_c_pos,
+                    model.input_pos_tag: input_pos_tag,
                     model.dropout_keep_prob: dropout_keep_prob,
                 }
                 accuracy, predicts = sess.run([model.accuracy, model.predicts], feed_dict)
@@ -129,8 +132,8 @@ if __name__=='__main__':
                 print('epoch: {}/{}'.format(epoch + 1, hp.num_epochs))
                 for j in range(len(dataset.train_instances) // hp.batch_size):
                     if task==1:
-                        x, c, y, pos_c, _ = dataset.next_train_data()
-                        trigger_train_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=0.8)
+                        x, c, y, pos_c, pos_tag = dataset.next_train_data()
+                        trigger_train_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, input_pos_tag=pos_tag, dropout_keep_prob=0.8)
                     if task==2:
                         x, t, c, y, pos_c, pos_t, _ = dataset.next_train_data()
                         argument_train_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c,
@@ -138,8 +141,8 @@ if __name__=='__main__':
                                             dropout_keep_prob=0.8)
                 if epoch % 3 == 0:
                     if task==1:
-                        x, c, y, pos_c, _ = dataset.next_eval_data()
-                        trigger_eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=1.0)
+                        x, c, y, pos_c, pos_tag = dataset.next_eval_data()
+                        trigger_eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c,  input_pos_tag=pos_tag, dropout_keep_prob=1.0)
                     if task==2:
                         x, t, c, y, pos_c, pos_t, _ = dataset.eval_data()
                         argument_eval_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c,
@@ -148,8 +151,8 @@ if __name__=='__main__':
 
             print("----test results---------------------------------------------------------------------")
             if task==1:
-                x, c, y, pos_c, _ = dataset.next_eval_data()
-                predicts = trigger_eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, dropout_keep_prob=1.0)
+                x, c, y, pos_c, pos_tag = dataset.next_eval_data()
+                predicts = trigger_eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, input_pos_tag=pos_tag, dropout_keep_prob=1.0)
             if task==2:
                 x, t, c, y, pos_c, pos_t, _ = dataset.eval_data()
                 predicts = argument_eval_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c,

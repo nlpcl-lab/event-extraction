@@ -73,7 +73,6 @@ class Model():
             input_sentence_vec_expanded = tf.expand_dims(input_sentence_vec, -1)
         pooled_outputs = []
         for i, filter_size in enumerate(filter_sizes):
-            #with tf.device('/cpu:0'), tf.name_scope('conv-maxpool-%s' % filter_size):
             with tf.name_scope('conv-maxpool-%s' % filter_size):
                 # The current word and context of the sentence feature considered here
                 filter_shape = [filter_size, word_embedding_size + 2 * pos_embedding_size, 1, filter_num]
