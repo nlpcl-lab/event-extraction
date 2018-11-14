@@ -47,6 +47,10 @@ class Model():
         # [batch_size, num_labels]
         input_y = tf.placeholder(tf.float32, shape=[batch_size, num_labels], name="input_y")
         self.input_y = input_y
+
+        input_postagging = tf.placeholder(tf.int32, shape=[batch_size, sentence_length], name="input_t_pos")
+        self.input_postagging = input_postagging
+
         # argument candidates distance vector
         # example: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
         input_c_pos = tf.placeholder(tf.int32, shape=[batch_size, sentence_length], name="input_c_pos")
@@ -64,9 +68,12 @@ class Model():
                 W_text = tf.Variable(embed_matrx, trainable=False, dtype=tf.float32, name='word_embedding')
             input_word_vec = tf.nn.embedding_lookup(W_text, input_x)
 
-            Tri_pos = tf.Variable(
+            input_postagging_c = input_postagging + (sentence_length - 1)
+            Tagging_pos = tf.Variable(
                 tf.random_normal(shape=[2 * (sentence_length - 1) + 1, pos_embedding_size], mean=0.0, stddev=0.5),
-                name="tri_pos_table")
+                name="input_postagging_table")
+            input_postagging_vec = tf.nn.embedding_lookup(Tagging_pos, input_postagging_c)
+
             input_c_pos_c = input_c_pos + (sentence_length - 1)
             Can_pos = tf.Variable(
                 tf.random_normal(shape=[2 * (sentence_length - 1) + 1, pos_embedding_size], mean=0.0, stddev=0.5),
@@ -76,9 +83,9 @@ class Model():
             # The feature of the distance and the word features of the sentence constitute a collated feature as an input to the convolutional neural network.
             # [batch_size, sentence_length, word_embedding_size+2*pos_size]
             if tf_version_checker>=1:
-                input_sentence_vec = tf.concat([input_word_vec, input_c_pos_vec],2)
+                input_sentence_vec = tf.concat([input_word_vec, input_postagging_vec, input_c_pos_vec],2)
             else:
-                input_sentence_vec = tf.concat(2, [input_word_vec, input_c_pos_vec])
+                input_sentence_vec = tf.concat(2, [input_word_vec, input_postagging_vec, input_c_pos_vec])
             # CNN supports 4d input, so increase the one-dimensional vector to indicate the number of input channels.
             input_sentence_vec_expanded = tf.expand_dims(input_sentence_vec, -1)
         pooled_outputs = []
