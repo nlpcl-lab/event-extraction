@@ -44,16 +44,39 @@ class Dataset_Trigger:
         print('all label for dataset: {}'.format(len(self.all_labels)))
 
     def embed_manager(self):
-        matrx = np.zeros([len(self.all_words), HyperParams_Tri_classification.word_embedding_size])
+        matrix = np.zeros([len(self.all_words), HyperParams_Tri_classification.word_embedding_size])
+        word_map = self.read_glove()
+
+        for k in self.special_key:
+            matrix[self.word_id[k]] = np.random.normal(0, 0.001, HyperParams_Tri_classification.word_embedding_size)
 
         for idx,word in enumerate(self.all_words):
+            if word in word_map.keys():
+                matrix[idx] = word_map[word]
+            else:
+                if len(word.split())==1:  # OOV case
+                    matrix[idx]=matrix[self.word_id['<unk>']]
+                else: # multiple word as one word, maybe Entity case
+                    pass #Do it after iterating all voca once
 
+        for idx,word in enumerate(self.all_words):
+            if word not in word_map.keys() and (len(word.split())!=1): ##Entity case
+                for subword in word.split():
+                    if subword in word_map:
+                        matrix[idx] += word_map[subword]
+                    else:
+                        matrix[idx] += matrix[self.word_id['<unk>']]
+        return matrix
 
-    def load_glove(self):
+    @staticmethod
+    def read_glove():
+        word_map = dict()
         with open(MyConfig.glove_txt_path,'r',encoding='utf8') as f:
             ls = f.readlines()
-            print(ls[0])
-
+            for l in ls:
+                l = l.split()
+                word_map[l[0]] = [float(el) for el in l[1:]]
+        return word_map
 
     def divide_train_eval_data(self):
         testset_fname = []
@@ -108,6 +131,8 @@ class Dataset_Trigger:
 
         all_words.add('<eos>')
         all_words.add('<unk>')
+        self.special_key = ['<eos>','<unk>']
+
         all_pos_taggings.add('*')
 
         self.word_id = dict(zip(all_words, range(len(all_words))))

@@ -57,8 +57,10 @@ class Model():
             # [vocab_size, embedding_size]
 
             # TODO: Word2Vec lookup table
-            #W_text = tf.Variable(tf.random_normal(shape=[vocab_size, word_embedding_size], mean=0.0, stddev=0.5), name="word_table")
-            W_text = tf.Variable(embed_matrx, trainable=False, dtype=tf.float32, name='word_embedding')
+            if embed_matrx is None:  # use randomly initialized matrix as word embedding
+                W_text = tf.Variable(tf.random_normal(shape=[vocab_size, word_embedding_size], mean=0.0, stddev=0.5), name="word_table")
+            else:  # pre-trained word embedding matrx
+                W_text = tf.Variable(embed_matrx, trainable=False, dtype=tf.float32, name='word_embedding')
             input_word_vec = tf.nn.embedding_lookup(W_text, input_x)
 
             Tri_pos = tf.Variable(
