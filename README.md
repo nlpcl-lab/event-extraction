@@ -28,8 +28,6 @@ $ python Script.py 1 2  # Script for `Trigger Classification`
 
 ## Todo 
 
-- Add word2vec
-
 - Evaluation Script
 
 ## Results
