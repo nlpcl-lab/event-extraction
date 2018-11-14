@@ -3,7 +3,7 @@ import pickle, os
 import numpy as np
 import nltk
 from Util import one_hot, find_candidates
-from Config import MyConfig,HyperParams_Tri_classification as hp_f
+from Config import MyConfig,HyperParams_Tri_classification
 
 class Dataset_Trigger:
     def __init__(self,
@@ -123,8 +123,8 @@ class Dataset_Trigger:
             for pos_tag in pos_taggings: all_pos_taggings.add(pos_tag)
             all_labels.add(label)
 
-            if len(words) > hp_f.max_sequence_length:
-                #print('len(word) > {}, Goodbye! '.format(hp_f.max_sequence_length), len(words), words)
+            if len(words) >HyperParams_Tri_classification.max_sequence_length:
+                #print('len(word) > 80, Goodbye! ', len(words), words)
                 return None
 
             res = {
@@ -142,7 +142,7 @@ class Dataset_Trigger:
         tri_classification_data = man.tri_task_format_data
 
         total_instance = []
-        dump_instance_fname = './data/trigger_maxlen_{}_instance.txt'.format(hp_f.max_sequence_length)
+        dump_instance_fname = './data/trigger_maxlen_{}_instance.txt'.format(HyperParams_Tri_classification.max_sequence_length)
 
         if os.path.exists(dump_instance_fname):
             print('use previous instance data for trigger task')
