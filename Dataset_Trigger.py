@@ -123,7 +123,7 @@ class Dataset_Trigger:
             for pos_tag in pos_taggings: all_pos_taggings.add(pos_tag)
             all_labels.add(label)
 
-            if len(words) >80:
+            if len(words) >HyperParams_Tri_classification.max_sequence_length:
                 #print('len(word) > 80, Goodbye! ', len(words), words)
                 return None
 

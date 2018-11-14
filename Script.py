@@ -140,7 +140,7 @@ if __name__=='__main__':
                         argument_train_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c,
                                             input_t_pos=pos_t,
                                             dropout_keep_prob=0.5)
-                if False:#epoch % 3 == 0:
+                if epoch % 5 == 0:
                     if task==1:
                         x, c, y, pos_c, pos_tag = dataset.next_eval_data()
                         trigger_eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, input_pos_tag=pos_tag,
