@@ -133,16 +133,18 @@ if __name__=='__main__':
                 for j in range(len(dataset.train_instances) // hp.batch_size):
                     if task==1:
                         x, c, y, pos_c, pos_tag = dataset.next_train_data()
-                        trigger_train_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, input_pos_tag=pos_tag, dropout_keep_prob=0.5)
+                        trigger_train_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, input_pos_tag=pos_tag,
+                                           dropout_keep_prob=0.5)
                     if task==2:
                         x, t, c, y, pos_c, pos_t, _ = dataset.next_train_data()
                         argument_train_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c,
                                             input_t_pos=pos_t,
                                             dropout_keep_prob=0.5)
-                if epoch % 3 == 0:
+                if False:#epoch % 3 == 0:
                     if task==1:
                         x, c, y, pos_c, pos_tag = dataset.next_eval_data()
-                        trigger_eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c,  input_pos_tag=pos_tag, dropout_keep_prob=1.0)
+                        trigger_eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, input_pos_tag=pos_tag,
+                                          dropout_keep_prob=1.0)
                     if task==2:
                         x, t, c, y, pos_c, pos_t, _ = dataset.eval_data()
                         argument_eval_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c,
