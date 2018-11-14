@@ -1,4 +1,5 @@
 import random
+import pickle, os
 import numpy as np
 import nltk
 from Util import one_hot, find_candidates
@@ -124,22 +125,38 @@ class Dataset_Trigger:
 
             if len(words) >80:
                 #print('len(word) > 80, Goodbye! ', len(words), words)
-                return
+                return None
 
-            self.instances.append({
+            res = {
                 'words': words,
                 'pos_taggings': pos_taggings,
                 'marks': marks,
                 'label': label,
                 'fname':fname
-            })
+            }
+            return res
 
         from Preprocess import PreprocessManager
         man = PreprocessManager()
         man.preprocess(tasktype='TRIGGER',subtasktype=self.dtype)
         tri_classification_data = man.tri_task_format_data
-        for data in tri_classification_data:
-            read_one(words=data[0], marks=data[1], label=data[2], fname=data[3], entity_mark=data[4])
+
+        total_instance = []
+        dump_instance_fname = './data/trigger_instance.txt'
+
+        if os.path.exists(dump_instance_fname):
+            print('use previous instance data for trigger task')
+            with open(dump_instance_fname,'rb') as f:
+                total_instance = pickle.load(f)
+        else:
+            print('Read {} data....'.format(len(tri_classification_data)))
+            for idx,data in enumerate(tri_classification_data):
+                if (100*idx/len(tri_classification_data))%10==0:
+                    print('{}%...'.format(round((100*idx/len(tri_classification_data)), 2)))
+                res = read_one(words=data[0], marks=data[1], label=data[2], fname=data[3], entity_mark=data[4])
+                if res is not None: total_instance.append(res)
+            with open(dump_instance_fname,'wb') as f:
+                pickle.dump(total_instance,f)
 
         all_words.add('<eos>')
         all_words.add('<unk>')
