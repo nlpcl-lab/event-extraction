@@ -88,7 +88,7 @@ class Dataset_Trigger:
         for ins in self.instances:
             #if 'nw/adj' not in ins['fname']: self.train_instances.append(ins)
             if ins['fname'] in testset_fname: self.eval_instances.append(ins)
-            elif len(testset_fname)>45: self.train_instances.append(ins)
+            elif len(testset_fname) > 45: self.train_instances.append(ins)
             else:
                 testset_fname.append(ins['fname'])
                 self.eval_instances.append(ins)

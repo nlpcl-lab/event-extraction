@@ -85,16 +85,16 @@ class Model():
             # The feature of the distance and the word features of the sentence constitute a collated feature as an input to the convolutional neural network.
             # [batch_size, sentence_length, word_embedding_size+2*pos_size]
             if tf_version_checker>=1:
-                input_sentence_vec = tf.concat([input_word_vec, input_pos_tag_vec, input_c_pos_vec],2)
+                input_sentence_vec = tf.concat([input_word_vec, input_c_pos_vec, input_pos_tag_vec],2)
             else:
-                input_sentence_vec = tf.concat(2, [input_word_vec, input_pos_tag_vec, input_c_pos_vec])
+                input_sentence_vec = tf.concat(2, [input_word_vec, input_c_pos_vec, input_pos_tag_vec])
             # CNN supports 4d input, so increase the one-dimensional vector to indicate the number of input channels.
             input_sentence_vec_expanded = tf.expand_dims(input_sentence_vec, -1)
         pooled_outputs = []
         for i, filter_size in enumerate(filter_sizes):
             with tf.name_scope('conv-maxpool-%s' % filter_size):
                 # The current word and context of the sentence feature considered here
-                filter_shape = [filter_size, word_embedding_size + 1 * pos_embedding_size, 1, filter_num]
+                filter_shape = [filter_size, word_embedding_size + 2 * pos_embedding_size, 1, filter_num]
                 W = tf.Variable(tf.truncated_normal(filter_shape, stddev=0.1), name="W")
                 b = tf.Variable(tf.constant(0.1, shape=[filter_num]), name="b")
                 # Convolution operation
