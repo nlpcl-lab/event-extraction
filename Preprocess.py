@@ -95,7 +95,7 @@ class PreprocessManager():
             if len(d['sentence'])>80:continue
             for candi in generated_candi:
                 # Except the 'None' label at classification
-                if subtasktype == 'CLASSIFICATION' and candi[1] == 'None': continue
+                # if subtasktype == 'CLASSIFICATION' and candi[1] == 'None': continue
                 self.tri_task_format_data.append([d['sentence']]+candi+[fname])
 
     def generate_trigger_candidate_pos_list(self, trigger_pos, entity_pos, subtasktype):
