@@ -73,7 +73,7 @@ class Model():
             input_pos_tag_c = input_pos_tag + (sentence_length - 1)
             Pos_tag = tf.Variable(
                 tf.random_normal(shape=[2 * (sentence_length - 1) + 1, pos_embedding_size], mean=0.0, stddev=0.5),
-                name="input_postagging_table")
+                name="input_pos_tag_table")
             input_pos_tag_vec = tf.nn.embedding_lookup(Pos_tag, input_pos_tag_c)
 
             input_c_pos_c = input_c_pos + (sentence_length - 1)
