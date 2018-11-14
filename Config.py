@@ -5,6 +5,7 @@ class MyConfig:
     raw_dir_list = os.listdir('./data/ace_2005_td_v7/data/English/')
     word_embed_size = 100
     glove_txt_path = './data/glove/glove.6B/glove.6B.{}d.txt'.format(word_embed_size)
+    mark_long_entity_in_pos = True
 
 
 class HyperParams:

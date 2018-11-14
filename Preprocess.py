@@ -96,7 +96,7 @@ class PreprocessManager():
             for candi in generated_candi:
                 # Except the 'None' label at classification
                 # if subtasktype == 'CLASSIFICATION' and candi[1] == 'None': continue
-                self.tri_task_format_data.append([d['sentence']]+candi+[fname])
+                self.tri_task_format_data.append([d['sentence']]+candi+[fname]+d['entity_position'])
 
     def generate_trigger_candidate_pos_list(self, trigger_pos, entity_pos, subtasktype):
         cand_list = []

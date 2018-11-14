@@ -97,16 +97,23 @@ class Dataset_Trigger:
         random.shuffle(self.train_instances)
         assert len(self.instances)==(len(self.train_instances)+len(self.eval_instances))
 
-    def manage_entity_in_POS_ste(self):
-        pass
-
+    def manage_entity_in_POS(self, poss, entity_mark):
+        new_pos = []
+        assert len(poss)==len(entity_mark)
+        for pos, ent in zip(poss, entity_mark):
+            if ent=='*': new_pos.append(pos[1])
+            elif len(pos[0].split())==1: new_pos.append(pos[1])
+            else: new_pos.append('ENTITY')
+        return new_pos
 
     def read_dataset(self):
         all_words, all_pos_taggings, all_labels, all_marks = [set() for _ in range(4)]
 
-        def read_one(words, marks, label, fname):
+        def read_one(words, marks, label, fname, entity_mark):
             pos_taggings = nltk.pos_tag(words)
-            pos_taggings = [pos_tagging[1] for pos_tagging in pos_taggings]
+            if MyConfig.mark_long_entity_in_pos:
+                pos_taggings = self.manage_entity_in_POS(pos_taggings, entity_mark)
+            #pos_taggings = [pos_tagging[1] for pos_tagging in pos_taggings]
 
             assert len(pos_taggings) == len(words)
 
@@ -132,7 +139,7 @@ class Dataset_Trigger:
         man.preprocess(tasktype='TRIGGER',subtasktype=self.dtype)
         tri_classification_data = man.tri_task_format_data
         for data in tri_classification_data:
-            read_one(words=data[0], marks=data[1], label=data[2], fname=data[3])
+            read_one(words=data[0], marks=data[1], label=data[2], fname=data[3], entity_mark=data[4])
 
         all_words.add('<eos>')
         all_words.add('<unk>')
