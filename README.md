@@ -8,7 +8,7 @@ Tensorflow Implementation of Deep Learning Approach for  Event Extraction([**ACE
 
 * "[GoogleNews-vectors-negative300](https://code.google.com/archive/p/word2vec/)" is used as a pre-trained word2vec model.
 
-* "[glove.6B][https://nlp.stanford.edu/projects/glove/)" is used as a pre-trained GloVe model.
+* "[glove.6B](https://nlp.stanford.edu/projects/glove/)" is used as a pre-trained GloVe model.
 
 * Performance (accuracy and f1-socre) outputs during training are **UNOFFICIAL SCORES** of *ACE 2005*. 
 
