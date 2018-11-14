@@ -81,7 +81,7 @@ if __name__=='__main__':
                 print("eval accuracy:{}".format(accuracy))
 
                 print(classification_report([np.argmax(item) for item in input_y], predicts, target_names=dataset.all_labels))
-                average_policy = 'weighted'
+                average_policy = 'macro'
                 pre, rec, acc = precision_score([np.argmax(item) for item in input_y], predicts,
                                                 average=average_policy), recall_score([np.argmax(item) for item in input_y],
                                                                                   predicts,
@@ -89,7 +89,7 @@ if __name__=='__main__':
                     [np.argmax(item) for item in input_y], predicts)
 
 
-                print("Precision: {}\nRecall: {}\nAccuracy  :  {}".format(pre,rec,acc))
+                print("[{}]\nPrecision: {}\nRecall: {}\nAccuracy  :  {}\n".format(average_policy,pre,rec,acc))
 
                 return predicts
 

@@ -162,7 +162,6 @@ class Dataset_Trigger:
             with open(dump_instance_fname,'wb') as f:
                 pickle.dump(total_instance,f)
 
-
         self.instances = total_instance
 
         all_words.add('<eos>')
