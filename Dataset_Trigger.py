@@ -89,7 +89,7 @@ class Dataset_Trigger:
         for ins in self.instances:
             #if 'nw/adj' not in ins['fname']: self.train_instances.append(ins)
             if ins['fname'] in testset_fname: self.eval_instances.append(ins)
-            elif len(testset_fname)>45: self.train_instances.append(ins)
+            elif len(testset_fname) > 45: self.train_instances.append(ins)
             else:
                 testset_fname.append(ins['fname'])
                 self.eval_instances.append(ins)
@@ -148,6 +148,11 @@ class Dataset_Trigger:
             print('use previous instance data for trigger task')
             with open(dump_instance_fname,'rb') as f:
                 total_instance = pickle.load(f)
+                for ins in total_instance:
+                    for word in ins['words']: all_words.add(word)
+                    for mark in ins['marks']: all_marks.add(mark)
+                    for pos_tag in ins['pos_taggings']: all_pos_taggings.add(pos_tag)
+                    all_labels.add(ins['label'])
         else:
             print('Read {} data....'.format(len(tri_classification_data)))
             for idx,data in enumerate(tri_classification_data):
