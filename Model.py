@@ -23,6 +23,9 @@ class Model():
                  batch_size=10,
                  embed_matrx=None
                  ):
+
+        tf_version_checker = int(tf.__version__.split('.')[0])
+
         """
         :param sentence_length
         :param num_labels
@@ -62,7 +65,7 @@ class Model():
                 name="candidate_pos_table")
             input_c_pos_vec = tf.nn.embedding_lookup(Can_pos, input_c_pos_c)
             # [batch_size, sentence_length, word_embedding_size+2*pos_size]
-            if int(tf.__version__.split('.')[0])>=1:
+            if tf_version_checker >= 1:
                 input_sentence_vec = tf.concat([input_word_vec, input_t_pos_vec, input_c_pos_vec],2)
             else:
                 input_sentence_vec = tf.concat(2, [input_word_vec, input_t_pos_vec, input_c_pos_vec])
@@ -92,14 +95,14 @@ class Model():
                 pooled_outputs.append(pooled)
 
         num_filters_total = filter_num * len(filter_sizes)
-        if int(tf.__version__.split('.')[0]) >= 1:
+        if tf_version_checker >= 1:
             h_pool = tf.concat(pooled_outputs, 3)
         else:
             h_pool = tf.concat(3, pooled_outputs)
         h_pool_flat = tf.reshape(h_pool, [-1, num_filters_total])
         lexical_vec = tf.reshape(input_word_vec, shape=(-1, sentence_length * word_embedding_size))
         # Combine lexical level features and sentence level features
-        if int(tf.__version__.split('.')[0]) >= 1:
+        if tf_version_checker >= 1:
             all_input_features = tf.concat([lexical_vec, h_pool_flat], 1)
         else:
             all_input_features = tf.concat(1, [lexical_vec, h_pool_flat])
@@ -119,7 +122,7 @@ class Model():
 
         #with tf.device('/cpu:0'), tf.name_scope('loss'):
         with tf.name_scope('loss'):
-            if int(tf.__version__.split('.')[0]) >= 1:
+            if tf_version_checker >= 1:
                 entropy = tf.nn.softmax_cross_entropy_with_logits(labels=input_y, logits=scores)
             else:
                 entropy = tf.nn.softmax_cross_entropy_with_logits(scores, input_y)

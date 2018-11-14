@@ -26,6 +26,7 @@ class Model():
                  embed_matrx=None
                  ):
 
+        tf_version_checker = int(tf.__version__.split('.')[0])
 
         """
         :param sentence_length
@@ -76,7 +77,7 @@ class Model():
 
             # The feature of the distance and the word features of the sentence constitute a collated feature as an input to the convolutional neural network.
             # [batch_size, sentence_length, word_embedding_size+2*pos_size]
-            if int(tf.__version__.split('.')[0])>=1:
+            if tf_version_checker>=1:
                 input_sentence_vec = tf.concat([input_word_vec, input_c_pos_vec],2)
             else:
                 input_sentence_vec = tf.concat(2, [input_word_vec, input_c_pos_vec])
@@ -108,7 +109,7 @@ class Model():
 
         num_filters_total = filter_num * len(filter_sizes)
         # The number of all filters used (number of channels output)
-        if int(tf.__version__.split('.')[0]) >= 1:
+        if tf_version_checker >= 1:
             h_pool = tf.concat(pooled_outputs, 3)
         else:
             h_pool = tf.concat(3, pooled_outputs)
@@ -119,7 +120,7 @@ class Model():
         lexical_vec = tf.reshape(input_word_vec, shape=(-1, sentence_length * word_embedding_size))
         # Combine lexical level features and sentence level features
         # [batch_size, num_filters_total] + [batch_size, sentence_length*word_embedding_size]
-        if int(tf.__version__.split('.')[0]) >= 1:
+        if tf_version_checker >= 1:
             all_input_features = tf.concat([lexical_vec, h_pool_flat],1)
         else:
             all_input_features = tf.concat(1, [lexical_vec, h_pool_flat])
@@ -141,7 +142,7 @@ class Model():
         # Cost function of the model
 #        with tf.device('/cpu:0'), tf.name_scope('loss'):
         with tf.name_scope('loss'):
-            if int(tf.__version__.split('.')[0]) >= 1:
+            if tf_version_checker >= 1:
                 entropy = tf.nn.softmax_cross_entropy_with_logits(labels=input_y, logits=scores)
             else:
                 entropy = tf.nn.softmax_cross_entropy_with_logits(scores, input_y)
