@@ -221,6 +221,7 @@ class Dataset_Trigger:
             pos_candidate = [i for i in range(-index_candidates[0], 0)] + [i for i in range(0, self.max_sequence_length - index_candidates[0])]
             pos_c.append(pos_candidate)
             c.append([index_words[index_candidates[0]]] * self.max_sequence_length)
+            print(len(words) , len(marks) , len(pos_taggings) , len(index_words) , len(pos_candidate))
             assert len(words) == len(marks) == len(pos_taggings) == len(index_words) == len(pos_candidate)
 
         assert len(y) == len(x) == len(c) == len(pos_c) == len(pos_tag)
