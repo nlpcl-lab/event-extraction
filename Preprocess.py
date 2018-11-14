@@ -245,7 +245,7 @@ class PreprocessManager():
                             trigger_idx.append(idx)
 
         for el in trigger_idx:
-            trigger_type_label[el] = tmp['TYPE'] + '/' + tmp['SUBTYPE']
+            trigger_type_label[el] = tmp['TYPE']# + '/' + tmp['SUBTYPE']
 
         assert len(good_entity_mark_list)==len(good_token_list)==len(trigger_type_label)==len(argument_role_label)
         packed_data['sentence'] = good_token_list
