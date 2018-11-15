@@ -26,8 +26,8 @@ def draw(epoch, input_x, input_y, predicts, input_c_pos, id2label, id2word):
                     sent += id2word[input_x[i][j]] + ' '
 
             html_file.write(sent)
-            html_file.write('<div>Prediction: {}</div>'.format(id2label(predicts[j])))
-            html_file.write('<div>Answer: {}</div>'.format(id2label(input_y[j])))
+            html_file.write('<div>Prediction: {}</div>'.format(id2label[predicts[j]]))
+            html_file.write('<div>Answer: {}</div>'.format(id2label[input_y[j]]))
 
             html_file.write('</div>')
 
