@@ -51,6 +51,25 @@ $ python Script.py 1 2  # Script for `Trigger Classification`
 weighted avg       0.76      0.76      0.76       682
 ```
 
+##### with None label
+```
+              precision    recall  f1-score   support
+
+    Movement       0.47      0.21      0.29        68
+    Business       1.00      0.10      0.18        10
+     Contact       0.67      0.22      0.33        37
+     Justice       0.32      0.17      0.23        63
+        None       0.96      0.99      0.98      8348
+    Conflict       0.70      0.38      0.50       156
+        Life       0.64      0.38      0.48        65
+ Transaction       0.75      0.10      0.18        29
+   Personnel       0.73      0.24      0.36        46
+
+   micro avg       0.95      0.95      0.95      8822
+   macro avg       0.69      0.31      0.39      8822
+weighted avg       0.94      0.95      0.94      8822
+```
+
 ### Argument classification performance
 ```
               precision    recall  f1-score   support
