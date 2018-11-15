@@ -140,7 +140,7 @@ class Model():
         #        with tf.device('/cpu:0'), tf.name_scope('loss'):
         with tf.name_scope('loss'):
             # entropy = tf.nn.softmax_cross_entropy_with_logits(labels=input_y, logits=scores)
-            classes_weights = tf.constant([1, 0.2])
+            classes_weights = tf.constant([1, 0.1])
             entropy = tf.nn.weighted_cross_entropy_with_logits(targets=input_y, logits=scores, pos_weight=classes_weights)
             loss = tf.reduce_mean(entropy)
             self.loss = loss

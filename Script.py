@@ -18,6 +18,8 @@ if __name__=='__main__':
         dataset = TRIGGER_DATASET(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length,
                                   windows=hp.windows, dtype=subtask_type)
         print('all_labels :', dataset.all_labels)
+        for label in dataset.all_labels:
+            print(label + ' ' + dataset.label_id[label])
 
         from Model_Trigger import Model
         print("\n\nTrigger {} start.\n\n".format(subtask_type))
