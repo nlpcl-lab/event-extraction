@@ -19,7 +19,7 @@ if __name__=='__main__':
                                   windows=hp.windows, dtype=subtask_type)
         print('all_labels :', dataset.all_labels)
         for label in dataset.all_labels:
-            print(label + ' ' + dataset.label_id[label])
+            print(label + ' ' + str(dataset.label_id[label]))
 
         from Model_Trigger import Model
         print("\n\nTrigger {} start.\n\n".format(subtask_type))
