@@ -39,7 +39,6 @@ class Model():
         :param filter_num
         """
 
-
         # TODO: Check whether batch size can determined arbitrary in <1.0.0 version.
         batch_size = None
         # [batch_size, sentence_length]
@@ -48,6 +47,8 @@ class Model():
         # [batch_size, num_labels]
         input_y = tf.placeholder(tf.float32, shape=[batch_size, num_labels], name="input_y")
         self.input_y = input_y
+
+        # input_y_weights = tf.placeholder(tf.float32, shape=[batch_size], name="input_y_weights")
 
         input_pos_tag = tf.placeholder(tf.int32, shape=[batch_size, sentence_length], name="input_pos_tag")
         self.input_pos_tag = input_pos_tag
@@ -84,10 +85,7 @@ class Model():
 
             # The feature of the distance and the word features of the sentence constitute a collated feature as an input to the convolutional neural network.
             # [batch_size, sentence_length, word_embedding_size+2*pos_size]
-            if tf_version_checker>=1:
-                input_sentence_vec = tf.concat([input_word_vec, input_c_pos_vec, input_pos_tag_vec],2)
-            else:
-                input_sentence_vec = tf.concat(2, [input_word_vec, input_c_pos_vec, input_pos_tag_vec])
+            input_sentence_vec = tf.concat([input_word_vec, input_c_pos_vec, input_pos_tag_vec], 2)
             # CNN supports 4d input, so increase the one-dimensional vector to indicate the number of input channels.
             input_sentence_vec_expanded = tf.expand_dims(input_sentence_vec, -1)
         pooled_outputs = []
@@ -116,27 +114,19 @@ class Model():
 
         num_filters_total = filter_num * len(filter_sizes)
         # The number of all filters used (number of channels output)
-        if tf_version_checker >= 1:
-            h_pool = tf.concat(pooled_outputs, 3)
-        else:
-            h_pool = tf.concat(3, pooled_outputs)
-        # print h_pool
+        h_pool = tf.concat(pooled_outputs, 3)
         # Expand to the next level classifier
         h_pool_flat = tf.reshape(h_pool, [-1, num_filters_total])
-        # print h_pool_flat
         lexical_vec = tf.reshape(input_word_vec, shape=(-1, sentence_length * word_embedding_size))
         # Combine lexical level features and sentence level features
         # [batch_size, num_filters_total] + [batch_size, sentence_length*word_embedding_size]
-        if tf_version_checker >= 1:
-            all_input_features = tf.concat([lexical_vec, h_pool_flat],1)
-        else:
-            all_input_features = tf.concat(1, [lexical_vec, h_pool_flat])
+        all_input_features = tf.concat([lexical_vec, h_pool_flat], 1)
         # The overall classifier goes through a layer of dropout and then into softmax
         with tf.device('/cpu:0'), tf.name_scope('dropout'):
             all_features = tf.nn.dropout(all_input_features, dropout_keep_prob)
         # print all_features
         # Classifier
-        #with tf.device('/cpu:0'), tf.name_scope('softmax'):
+        # with tf.device('/cpu:0'), tf.name_scope('softmax'):
         with tf.name_scope('softmax'):
             W = tf.Variable(tf.truncated_normal([num_filters_total + sentence_length * word_embedding_size, num_labels], stddev=0.1), name="W")
             b = tf.Variable(tf.constant(0.1, shape=[num_labels]), name="b")
@@ -147,16 +137,15 @@ class Model():
         # print scores
         # print input_y
         # Cost function of the model
-#        with tf.device('/cpu:0'), tf.name_scope('loss'):
+        #        with tf.device('/cpu:0'), tf.name_scope('loss'):
         with tf.name_scope('loss'):
-            if tf_version_checker >= 1:
-                entropy = tf.nn.softmax_cross_entropy_with_logits(labels=input_y, logits=scores)
-            else:
-                entropy = tf.nn.softmax_cross_entropy_with_logits(scores, input_y)
+            # entropy = tf.nn.softmax_cross_entropy_with_logits(labels=input_y, logits=scores)
+            classes_weights = tf.constant([1, 0.2])
+            entropy = tf.nn.weighted_cross_entropy_with_logits(targets=input_y, logits=scores, pos_weight=classes_weights)
             loss = tf.reduce_mean(entropy)
             self.loss = loss
         # Accuracy is used for each training session
-        #with tf.device('/cpu:0'), tf.name_scope("accuracy"):
+        # with tf.device('/cpu:0'), tf.name_scope("accuracy"):
         with tf.name_scope("accuracy"):
             correct = tf.equal(predicts, tf.argmax(input_y, 1))
             accuracy = tf.reduce_mean(tf.cast(correct, "float"), name="accuracy")
