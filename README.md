@@ -32,6 +32,19 @@ $ python Script.py 1 2  # Script for `Trigger Classification`
 
 ## Results
 
+### Trigger identification performance
+```
+              precision    recall  f1-score   support
+
+     TRIGGER       0.59      0.44      0.50       527
+        None       0.97      0.98      0.98      9151
+
+   micro avg       0.95      0.95      0.95      9678
+   macro avg       0.78      0.71      0.74      9678
+weighted avg       0.95      0.95      0.95      9678
+
+```
+
 ### Trigger classification performance
 
 ```
