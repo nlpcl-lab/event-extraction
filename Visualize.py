@@ -9,7 +9,6 @@ def draw(epoch, input_x, input_y, predicts, input_c_pos, id2label, id2word):
             if input_y[i] == predicts[i]: continue
 
             sent_size = len(input_x[i])
-            html_file.write('<div style="padding: 20px 0;">')
             current_pos = 0
             for j in range(sent_size):
                 if input_c_pos[j] == 0:
@@ -25,7 +24,7 @@ def draw(epoch, input_x, input_y, predicts, input_c_pos, id2label, id2word):
                 else:
                     sent += word + ' '
 
-            html_file.write(sent)
+            html_file.write('<p style="padding: 20px 0;">{}</p>'.format(sent))
             html_file.write('<div>Prediction: {}</div>'.format(id2label[predicts[j]]))
             html_file.write('<div>Answer: {}</div>'.format(id2label[input_y[j]]))
 
