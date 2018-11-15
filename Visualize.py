@@ -20,7 +20,7 @@ def draw(epoch, input_x, input_y, predicts, input_c_pos, id2label, id2word):
                 word = id2word[input_x[i][j]]
                 if word == '<eos>': continue
                 if j == current_pos:
-                    sent += '<span style="background: rgba(255, 0, 0, 0.4);>{}</span> '.format(word)
+                    sent += '<span style="background: rgba(255, 0, 0, 0.4);">{}</span> '.format(word)
                 else:
                     sent += word + ' '
 
