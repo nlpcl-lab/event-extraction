@@ -83,14 +83,16 @@ class Dataset_Trigger:
         return word_map
 
     def over_sampling(self):
+        print('')
         label_instance = dict()
         for label in self.all_labels:
             label_instance[label] = []
 
         label_max_count = 0
-        for instance in self.train_instances: label_instance[instance['label']].append(instance)
-        for label, instances in label_instance.values():
-            if label_max_count < len(instances): label_max_count = len(instances)
+        for instance in self.train_instances:
+            label_instance[instance['label']].append(instance)
+        for label in label_instance:
+            if label_max_count < len(label_instance[label]): label_max_count = len(label_instance[label])
 
         new_train_instances = []
         for label in self.all_labels:
