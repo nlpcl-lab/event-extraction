@@ -1,5 +1,3 @@
-from bs4 import BeautifulSoup
-
 def draw(epoch, input_x, input_y, predicts, input_c_pos, id2label, id2word):
     sents_visual_file = './visualization/{}.html'.format(epoch)
 
@@ -20,10 +18,12 @@ def draw(epoch, input_x, input_y, predicts, input_c_pos, id2label, id2word):
 
             sent = ''
             for j in range(sent_size):
+                word = id2word[input_x[i][j]]
+                if word == '<eos>': continue
                 if j == current_pos:
-                    sent += '<span style="background: rgba(255, 0, 0, 0.4);>{}</span> '.format(id2word[input_x[i][j]])
+                    sent += '<span style="background: rgba(255, 0, 0, 0.4);>{}</span> '.format(word)
                 else:
-                    sent += id2word[input_x[i][j]] + ' '
+                    sent += word + ' '
 
             html_file.write(sent)
             html_file.write('<div>Prediction: {}</div>'.format(id2label[predicts[j]]))
