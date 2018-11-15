@@ -28,6 +28,7 @@ $ python Script.py 1 2  # Script for `Trigger Classification`
 
 ## Todo 
 
+- Apply Dymamic Multi-Pooling CNN
 - Evaluation Script
 
 ## Results
