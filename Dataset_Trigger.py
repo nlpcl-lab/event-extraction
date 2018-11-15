@@ -41,7 +41,7 @@ class Dataset_Trigger:
 
         self.eval_instances, self.train_instances = [], []
         self.divide_train_eval_data()
-        self.over_sampling()
+        # self.over_sampling()
         self.batch_nums = len(self.train_instances) // self.batch_size
         self.index = np.arange(len(self.train_instances))
         self.point = 0
@@ -83,7 +83,6 @@ class Dataset_Trigger:
         return word_map
 
     def over_sampling(self):
-        print('')
         label_instance = dict()
         for label in self.all_labels:
             label_instance[label] = []
