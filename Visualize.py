@@ -10,15 +10,16 @@ def draw(epoch, input_x, input_y, predicts, input_c_pos, id2label, id2word):
         for i in range(batch_size):
             if input_y[i] == predicts[i]: continue
 
+            sent_size = len(input_x[i])
             html_file.write('<div style="padding: 20px 0;">')
             current_pos = 0
-            for j in range(batch_size):
+            for j in range(sent_size):
                 if input_c_pos[j] == 0:
                     current_pos = j
                     break
 
             sent = ''
-            for j in range(batch_size):
+            for j in range(sent_size):
                 if j == current_pos:
                     sent += '<span style="background: rgba(255, 0, 0, 0.4);>{}</span> '.format(id2word[input_x[i][j]])
                 else:
