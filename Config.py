@@ -10,7 +10,7 @@ class MyConfig:
 
 class HyperParams:
     batch_size = 30
-    max_sequence_length = 80
+    max_sequence_length = 20
     windows = 3
     word_embedding_size = MyConfig.word_embed_size
     pos_embedding_size = 10
