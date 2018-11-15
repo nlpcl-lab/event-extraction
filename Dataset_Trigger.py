@@ -29,9 +29,11 @@ class Dataset_Trigger:
         self.instances = list()
 
         self.word_id = dict()
+        self.id2word = dict()
         self.pos_taggings_id = dict()
         self.mark_id = dict()
         self.label_id = dict()
+        self.id2label = dict()
 
         print('read data...', end=' ')
         self.read_dataset()
@@ -204,9 +206,11 @@ class Dataset_Trigger:
         all_pos_taggings.add('*')
 
         self.word_id = dict(zip(all_words, range(len(all_words))))
+        for word in self.word_id: self.id2word[word] = self.word_id[word]
         self.pos_taggings_id = dict(zip(all_pos_taggings, range(len(all_pos_taggings))))
         self.mark_id = dict(zip(all_marks, range(len(all_marks))))
         self.label_id = dict(zip(all_labels, range(len(all_labels))))
+        for label in self.label_id: self.id2label[label] = self.label_id[label]
 
         self.all_words = list(all_words)
         self.all_pos_taggings = list(all_pos_taggings)

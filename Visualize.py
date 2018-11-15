@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 
-def draw(epoch, input_x, input_y, predicts, input_c_pos, label_id):
-    sents_visual_file = './data/visualization/{}'.format(epoch)
+def draw(epoch, input_x, input_y, predicts, input_c_pos, id2label, id2word):
+    sents_visual_file = './visualization/{}.html'.format(epoch)
 
     size = len(input_y)
     with open(sents_visual_file, "w") as html_file:
@@ -20,13 +20,13 @@ def draw(epoch, input_x, input_y, predicts, input_c_pos, label_id):
             sent = ''
             for j in range(size):
                 if j == current_pos:
-                    sent += '<span style="background: rgba(255, 0, 0, 0.4);>{}</span> '.format(input_x[j])
+                    sent += '<span style="background: rgba(255, 0, 0, 0.4);>{}</span> '.format(id2word[input_x[j]])
                 else:
-                    sent += input_x[j] + ' '
+                    sent += id2word[input_x[j]] + ' '
 
             html_file.write(sent)
-            html_file.write('<div>Prediction: {}</div>'.format(label_id(predicts[j])))
-            html_file.write('<div>Answer: {}</div>'.format(label_id(input_y[j])))
+            html_file.write('<div>Prediction: {}</div>'.format(id2label(predicts[j])))
+            html_file.write('<div>Answer: {}</div>'.format(id2label(input_y[j])))
 
             html_file.write('</div>')
 

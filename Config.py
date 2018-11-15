@@ -22,7 +22,7 @@ class HyperParams:
 
 class HyperParams_Tri_classification:
     batch_size = 128
-    max_sequence_length = 20
+    max_sequence_length = 80
     windows = 3
     word_embedding_size = MyConfig.word_embed_size
     pos_embedding_size = 10

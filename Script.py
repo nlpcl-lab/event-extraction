@@ -99,7 +99,8 @@ if __name__ == '__main__':
                     input_y=[np.argmax(item) for item in input_y],
                     predicts=predicts,
                     input_c_pos=input_c_pos,
-                    label_id = dataset.label_id,
+                    id2label = dataset.id2label,
+                    id2word=dataset.id2word,
                 )
                 return predicts
 
