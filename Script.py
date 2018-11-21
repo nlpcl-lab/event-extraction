@@ -18,7 +18,6 @@ if __name__ == '__main__':
         hp = hp_trigger
         dataset = TRIGGER_DATASET(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length,
                                   windows=hp.windows, dtype=subtask_type)
-        print('all_labels :', dataset.all_labels)
         for label in dataset.all_labels:
             print(label + ' ' + str(dataset.label_id[label]))
 
@@ -42,6 +41,7 @@ if __name__ == '__main__':
                           word_embedding_size=hp.word_embedding_size,
                           pos_embedding_size=hp.pos_embedding_size,
                           filter_sizes=hp.filter_sizes,
+                          pos_tag_max_size=len(dataset.all_pos_taggings),
                           filter_num=hp.filter_num,
                           batch_size=hp.batch_size,
                           embed_matrx=dataset.word_embed)

@@ -18,6 +18,7 @@ class Model():
                  num_labels=10,
                  windows=3,
                  vocab_size=2048,
+                 pos_tag_max_size = 60,
                  word_embedding_size=100,
                  pos_embedding_size=10,
                  filter_sizes=[3, 4, 5],
@@ -71,11 +72,10 @@ class Model():
                 W_text = tf.Variable(embed_matrx, trainable=False, dtype=tf.float32, name='word_embedding')
             input_word_vec = tf.nn.embedding_lookup(W_text, input_x)
 
-            input_pos_tag_c = input_pos_tag + (sentence_length - 1)
             Pos_tag = tf.Variable(
-                tf.random_normal(shape=[2 * (sentence_length - 1) + 1, pos_embedding_size], mean=0.0, stddev=0.5),
+                tf.random_normal(shape=[pos_tag_max_size, pos_embedding_size], mean=0.0, stddev=0.5),
                 name="input_pos_tag_table")
-            input_pos_tag_vec = tf.nn.embedding_lookup(Pos_tag, input_pos_tag_c)
+            input_pos_tag_vec = tf.nn.embedding_lookup(Pos_tag, input_pos_tag)
 
             input_c_pos_c = input_c_pos + (sentence_length - 1)
             Can_pos = tf.Variable(
