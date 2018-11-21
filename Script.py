@@ -1,4 +1,4 @@
-import datetime
+import datetime, os, time
 import numpy as np
 import tensorflow as tf
 from sklearn.metrics import classification_report, precision_score, recall_score, accuracy_score
@@ -51,15 +51,15 @@ if __name__ == '__main__':
             train_op = optimizer.apply_gradients(grads_and_vars)
 
             # TODO: after train, do save
-            # timestamp = str(int(time.time()))
-            # out_dir = os.path.abspath(os.path.join(os.path.curdir, "model_01", timestamp))
-            # print("Writing to {}\n".format(out_dir))
-            # checkpoint_dir = os.path.abspath(os.path.join(out_dir, "checkpoints"))
-            # checkpoint_prefix = os.path.join(checkpoint_dir, "model")
-            # if not os.path.exists(checkpoint_dir): os.makedirs(checkpoint_dir)
-            # saver = tf.train.Saver(tf.all_variables(), max_to_keep=20)
+            timestamp = str(int(time.time()))
+            out_dir = os.path.abspath(os.path.join(os.path.curdir, "runs", timestamp))
+            print("Writing to {}\n".format(out_dir))
+            checkpoint_dir = os.path.abspath(os.path.join(out_dir, "checkpoints"))
+            checkpoint_prefix = os.path.join(checkpoint_dir, "model")
+            if not os.path.exists(checkpoint_dir):
+                os.makedirs(checkpoint_dir)
+            saver = tf.train.Saver(tf.all_variables(), max_to_keep=20)
             sess.run(tf.initialize_all_variables())
-
 
             def trigger_train_step(input_x, input_y, input_c, input_c_pos, input_pos_tag, dropout_keep_prob):
                 feed_dict = {
@@ -147,6 +147,8 @@ if __name__ == '__main__':
                         x, c, y, pos_c, pos_tag = dataset.next_train_data()
                         trigger_train_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, input_pos_tag=pos_tag,
                                            dropout_keep_prob=0.5)
+
+                        saver.save(sess, checkpoint_prefix + "-trigger-identification")
                     if task == 2:
                         x, t, c, y, pos_c, pos_t, _ = dataset.next_train_data()
                         argument_train_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c,
