@@ -177,7 +177,7 @@ class Dataset_Trigger:
         tri_classification_data = man.tri_task_format_data
 
         total_instance = []
-        dump_instance_fname = './data/trigger_{}_maxlen_{}_instance.txt'.format(self.dtype, HyperParams_Tri_classification.max_sequence_length)
+        dump_instance_fname = './data/trigger_{}_maxlen_{}_instance.bin'.format(self.dtype, HyperParams_Tri_classification.max_sequence_length)
 
         if os.path.exists(dump_instance_fname):
             print('use previous instance data for trigger task')

@@ -43,7 +43,6 @@ if __name__ == '__main__':
                           filter_sizes=hp.filter_sizes,
                           pos_tag_max_size=len(dataset.all_pos_taggings),
                           filter_num=hp.filter_num,
-                          batch_size=hp.batch_size,
                           embed_matrx=dataset.word_embed)
 
             optimizer = tf.train.AdamOptimizer(hp.lr)

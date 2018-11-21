@@ -20,7 +20,6 @@ class Model():
                  pos_embedding_size=10,
                  filter_sizes=[3, 4, 5],
                  filter_num=200,
-                 batch_size=10,
                  embed_matrx=None
                  ):
 
@@ -36,16 +35,15 @@ class Model():
         :param filter_sizes
         :param filter_num
         """
-        batch_size = None
-        input_x = tf.placeholder(tf.int32, shape=[batch_size, sentence_length], name="input_x")
+        input_x = tf.placeholder(tf.int32, shape=[None, sentence_length], name="input_x")
         self.input_x = input_x
-        input_y = tf.placeholder(tf.float32, shape=[batch_size, num_labels], name="input_y")
+        input_y = tf.placeholder(tf.float32, shape=[None, num_labels], name="input_y")
         self.input_y = input_y
         # trigger distance vector
-        input_t_pos = tf.placeholder(tf.int32, shape=[batch_size, sentence_length], name="input_t_pos")
+        input_t_pos = tf.placeholder(tf.int32, shape=[None, sentence_length], name="input_t_pos")
         self.input_t_pos = input_t_pos
         # argument candidates distance vector
-        input_c_pos = tf.placeholder(tf.int32, shape=[batch_size, sentence_length], name="input_c_pos")
+        input_c_pos = tf.placeholder(tf.int32, shape=[None, sentence_length], name="input_c_pos")
         self.input_c_pos = input_c_pos
         dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
         self.dropout_keep_prob = dropout_keep_prob
