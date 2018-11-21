@@ -127,26 +127,20 @@ class Model():
         # The overall classifier goes through a layer of dropout and then into softmax
         with tf.device('/cpu:0'), tf.name_scope('dropout'):
             all_features = tf.nn.dropout(all_input_features, dropout_keep_prob)
-        # print all_features
-        # Classifier
-        # with tf.device('/cpu:0'), tf.name_scope('softmax'):
-        with tf.name_scope('softmax'):
+
+        with tf.name_scope('output'):
             W = tf.Variable(tf.truncated_normal([num_filters_total + sentence_length * word_embedding_size, num_labels], stddev=0.1), name="W")
             b = tf.Variable(tf.constant(0.1, shape=[num_labels]), name="b")
             scores = tf.nn.xw_plus_b(all_features, W, b, name="scores")
             predicts = tf.arg_max(scores, dimension=1, name="predicts")
             self.scores = scores
             self.predicts = predicts
-        # print scores
-        # print input_y
-        # Cost function of the model
-        #        with tf.device('/cpu:0'), tf.name_scope('loss'):
+
         with tf.name_scope('loss'):
             entropy = tf.nn.softmax_cross_entropy_with_logits(labels=input_y, logits=scores)
             loss = tf.reduce_mean(entropy)
             self.loss = loss
-        # Accuracy is used for each training session
-        # with tf.device('/cpu:0'), tf.name_scope("accuracy"):
+
         with tf.name_scope("accuracy"):
             correct = tf.equal(predicts, tf.argmax(input_y, 1))
             accuracy = tf.reduce_mean(tf.cast(correct, "float"), name="accuracy")
