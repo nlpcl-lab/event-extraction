@@ -148,7 +148,8 @@ if __name__ == '__main__':
                         trigger_train_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, input_pos_tag=pos_tag,
                                            dropout_keep_prob=0.5)
 
-                        saver.save(sess, checkpoint_prefix + "-trigger-identification")
+                        path = saver.save(sess, checkpoint_prefix + "-Trigger-Identification", epoch, write_meta_graph=False)
+                        print("Saved model checkpoint to {}\n".format(path))
                     if task == 2:
                         x, t, c, y, pos_c, pos_t, _ = dataset.next_train_data()
                         argument_train_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c,
