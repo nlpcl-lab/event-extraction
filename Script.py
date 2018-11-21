@@ -148,8 +148,6 @@ if __name__ == '__main__':
                         trigger_train_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, input_pos_tag=pos_tag,
                                            dropout_keep_prob=0.5)
 
-                        path = saver.save(sess, checkpoint_prefix + "-Trigger-Identification", epoch, write_meta_graph=False)
-                        print("Saved model checkpoint to {}\n".format(path))
                     if task == 2:
                         x, t, c, y, pos_c, pos_t, _ = dataset.next_train_data()
                         argument_train_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c,
@@ -161,6 +159,9 @@ if __name__ == '__main__':
                         x, c, y, pos_c, pos_tag = dataset.next_eval_data()
                         trigger_eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, input_pos_tag=pos_tag,
                                           dropout_keep_prob=1.0)
+                        path = saver.save(sess, checkpoint_prefix + "-Trigger-Identification", epoch, write_meta_graph=False)
+                        print("Saved model checkpoint to {}\n".format(path))
+
                     if task == 2:
                         x, t, c, y, pos_c, pos_t, _ = dataset.eval_data()
                         argument_eval_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c,
