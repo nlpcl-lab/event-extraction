@@ -37,7 +37,7 @@ if __name__ == '__main__':
     print('x_batch :', x_batch)
     print('x_pos_batch :', x_pos_batch)
 
-    checkpoint_dir = './runs/1542830074/checkpoints'
+    checkpoint_dir = './runs/1542831140/checkpoints'
     checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir)
 
     graph = tf.Graph()
@@ -62,5 +62,8 @@ if __name__ == '__main__':
                 dropout_keep_prob: 1.0,
             }
 
-            pred = sess.run(predictions, feed_dict)
-            print('pred :', pred)
+            preds = sess.run(predictions, feed_dict)
+            print('result!')
+            for i in range(len(preds)):
+                if preds[i]:
+                    print('event! :', dataset.id2word[x_batch[0][i]])
