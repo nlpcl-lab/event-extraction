@@ -65,5 +65,4 @@ if __name__ == '__main__':
             preds = sess.run(predictions, feed_dict)
             print('result!')
             for i in range(len(preds)):
-                if preds[i]:
-                    print('event! :', dataset.id2word[x_batch[0][i]])
+                print('{}: {}'.format(dataset.id2word[x_batch[0][i]], preds[i]))
