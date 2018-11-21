@@ -66,7 +66,7 @@ if __name__ == '__main__':
                     model.input_x: input_x,
                     model.input_y: input_y,
                     model.input_c_pos: input_c_pos,
-                    model.input_pos_tag: input_pos_tag,
+                    # model.input_pos_tag: input_pos_tag,
                     model.dropout_keep_prob: dropout_keep_prob,
                 }
                 _, loss, accuracy = sess.run([train_op, model.loss, model.accuracy], feed_dict)
@@ -159,7 +159,7 @@ if __name__ == '__main__':
                         x, c, y, pos_c, pos_tag = dataset.next_eval_data()
                         trigger_eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, input_pos_tag=pos_tag,
                                           dropout_keep_prob=1.0)
-                        path = saver.save(sess, checkpoint_prefix + "-Trigger-Identification", epoch, write_meta_graph=False)
+                        path = saver.save(sess, checkpoint_prefix + "-Trigger-Identification", epoch)
                         print("Saved model checkpoint to {}\n".format(path))
 
                     if task == 2:
