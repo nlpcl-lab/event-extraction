@@ -79,7 +79,7 @@ if __name__ == '__main__':
                     model.input_x: input_x,
                     model.input_y: input_y,
                     model.input_c_pos: input_c_pos,
-                    model.input_pos_tag: input_pos_tag,
+                    # model.input_pos_tag: input_pos_tag,
                     model.dropout_keep_prob: dropout_keep_prob,
                 }
                 accuracy, predicts = sess.run([model.accuracy, model.predicts], feed_dict)
