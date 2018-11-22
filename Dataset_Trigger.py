@@ -43,6 +43,10 @@ class Dataset_Trigger:
 
         self.valid_instances, self.eval_instances, self.train_instances = [], [], []
         self.divide_train_valid_eval_data()
+        print('\n\n########### TRAIN: {}   VALID: {}   TEST:   {}'.format(len(self.train_instances),
+                                                                          len(self.valid_instances),
+                                                                          len(self.eval_instances)))
+
         # self.over_sampling()
         self.batch_nums = len(self.train_instances) // self.batch_size
         self.index = np.arange(len(self.train_instances))
@@ -53,8 +57,21 @@ class Dataset_Trigger:
         matrix = np.zeros([len(self.all_words), HyperParams_Tri_classification.word_embedding_size])
         word_map = self.read_glove()
 
-        for k in self.special_key:
-            matrix[self.word_id[k]] = np.random.normal(0, 0.001, HyperParams_Tri_classification.word_embedding_size)
+        special_key_dump_fname = './data/special_key_emblen_{}.bin'.format(HyperParams_Tri_classification.word_embedding_size)
+
+        if os.path.exists(special_key_dump_fname):
+            with open(special_key_dump_fname,'rb') as f:
+                dumped_skey = pickle.load(f)
+                for k in self.special_key:
+                    matrix[self.word_id[k]] = dumped_skey[k]
+        else:
+            dumped_skey = dict()
+            for k in self.special_key:
+                tmp_val = np.random.normal(0, 0.001, HyperParams_Tri_classification.word_embedding_size)
+                dumped_skey[k] = tmp_val
+                matrix[self.word_id[k]] = tmp_val
+            with open(special_key_dump_fname,'wb') as f:
+                pickle.dump(dumped_skey, f)
 
         for idx, word in enumerate(self.all_words):
             if word in word_map.keys():
@@ -113,7 +130,7 @@ class Dataset_Trigger:
         tdv_instance_fname = './data/trigger_TDV_divide_{}_maxlen_{}_instance.bin'.format(self.dtype, HyperParams_Tri_classification.max_sequence_length)
         train_ins, valid_ins, test_ins = [], [], []
 
-        if os.path.exist(tdv_instance_fname):
+        if os.path.exists(tdv_instance_fname):
             with open(tdv_instance_fname,'rb') as f:
                 train_ins,valid_ins,test_ins = pickle.load(f)
         else:
@@ -138,10 +155,9 @@ class Dataset_Trigger:
                 else:
                     raise ValueError
             with open(tdv_instance_fname, 'wb') as f:
-                pickle.dump(f, [train_ins, valid_ins, test_ins])
+                pickle.dump([train_ins, valid_ins, test_ins],f)
 
         self.train_instances, self.valid_instances, self.eval_instances = train_ins, valid_ins, test_ins
-        print('TRAIN: {} VALID{} TEST: {}'.format(len(self.train_instances), len(self.valid_instances), len(self.eval_instances)))
         random.shuffle(self.train_instances)
         assert len(self.instances) == (len(self.train_instances) + len(self.eval_instances) + len(self.valid_instances))
 

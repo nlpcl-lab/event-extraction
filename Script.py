@@ -162,7 +162,7 @@ if __name__ == '__main__':
                         print("Saved model checkpoint to {}\n".format(path))
 
                     if task == 2:
-                        x, t, c, y, pos_c, pos_t, _ = dataset.eval_data()
+                        x, t, c, y, pos_c, pos_t, _ = dataset.valid_instances_data()
                         argument_eval_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c,
                                            input_t_pos=pos_t,
                                            dropout_keep_prob=1.0)
