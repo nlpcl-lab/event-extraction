@@ -136,7 +136,6 @@ class Dataset_Trigger:
         else:
             validset_fname, testset_fname = [], []
             # select test set randomly
-            random.shuffle(self.instances)
             for ins in self.instances:
                 if 'nw/adj' not in ins['fname']:
                     train_ins.append(ins)
@@ -144,14 +143,15 @@ class Dataset_Trigger:
                     test_ins.append(ins)
                 elif ins['fname'] in validset_fname:
                     valid_ins.append(ins)
-                elif len(testset_fname) >= 35 and len(validset_fname)>= 35:
+                elif len(testset_fname) >= 30 and len(validset_fname)>= 30:
                     train_ins.append(ins)
-                elif len(testset_fname)<35:
-                    testset_fname.append(ins['fname'])
-                    test_ins.append(ins)
-                elif len(validset_fname)<35:
+                elif len(validset_fname)<30:
                     validset_fname.append(ins['fname'])
                     valid_ins.append(ins)
+                elif len(testset_fname)<30:
+                    testset_fname.append(ins['fname'])
+                    test_ins.append(ins)
+
                 else:
                     raise ValueError
             with open(tdv_instance_fname, 'wb') as f:

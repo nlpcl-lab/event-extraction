@@ -174,7 +174,7 @@ class PreprocessManager():
             else:
                 arg_idx = splitted_token_list.index(arg_text)
             if arg_idx==None:
-                print('Exception')
+                #   print('Exception')
                 return 1
             argument_role_label[arg_idx] = arg_role
 
@@ -205,8 +205,10 @@ class PreprocessManager():
 
         for el in trigger_idx:
             trigger_type_label[el] = tmp['TYPE']# + '/' + tmp['SUBTYPE']
+        for idx, tok in enumerate(splitted_token_list): splitted_token_list[idx] = tok.strip()
 
         assert len(splitted_entity_mark_list)==len(splitted_token_list)==len(trigger_type_label)==len(argument_role_label)
+
         packed_data['sentence'] = splitted_token_list
         packed_data['trigger_position'] = trigger_type_label
         packed_data['entity_position'] = splitted_entity_mark_list
