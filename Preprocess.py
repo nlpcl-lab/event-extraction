@@ -42,6 +42,210 @@ class PreprocessManager():
         print('TRIGGER DATASET: {}\nARGUMENT DATASET: {}\n'.format(len(self.tri_task_format_data),
                                                                    len(self.arg_task_format_data)))
 
+    def format_to_trigger(self, subtasktype):
+        for item in self.dataset:
+            d = item[0]
+            fname = item[1]
+            generated_candi = self.generate_trigger_candidate_pos_list(d['trigger_position'], d['entity_position'], subtasktype)
+            if len(d['sentence'])>hp_f.max_sequence_length:continue
+            for candi in generated_candi:
+                # Whether except the 'None' label at classification
+                # if subtasktype == 'CLASSIFICATION' and candi[1] == 'None': continue
+                self.tri_task_format_data.append([d['sentence']]+candi+[fname]+[d['entity_position']])
+
+    def generate_trigger_candidate_pos_list(self, trigger_pos, entity_pos, subtasktype):
+        cand_list = []
+        idx_list = []
+        for idx,el in enumerate(trigger_pos):
+            if el!='*': idx_list.append((idx,el))
+
+        assert len(entity_pos)==len(trigger_pos)
+
+        for idx in range(len(trigger_pos)):
+            marks = ['A' for i in range(len(trigger_pos))]
+            marks[idx]='B'
+            label = 'None'
+            for i in idx_list:
+                if idx == i[0]:
+                    label = i[1] if subtasktype=='CLASSIFICATION' else 'TRIGGER'  # else: Identification case
+            cand_list.append([marks,label])
+        return cand_list
+
+    def process_sentencewise(self, doc):
+        entities, val_timexs, events, xml_fname = doc
+        datas = []
+        for event in events:
+            for e_mention in event['event_mention']:
+                tmp = {'TYPE': event['TYPE'], 'SUBTYPE': event['SUBTYPE']}
+                tmp['raw_sent'] = e_mention['ldc_scope']['text']
+                sent_pos = [int(i) for i in e_mention['ldc_scope']['position']]
+                entities_in_sent = self.search_entity_in_sentence(entities, sent_pos)
+                val_timexs_in_sent = self.search_valtimex_in_sentence(val_timexs, sent_pos)
+                e_mention = self.get_argument_head(entities_in_sent, e_mention)
+                res = self.packing_sentence(e_mention, tmp, sent_pos, entities_in_sent, val_timexs_in_sent)
+                if res!=1: datas.append([res,xml_fname])
+        return datas
+
+    def packing_sentence(self, e_mention, tmp, sent_pos, entities, valtimexes):
+        packed_data = {
+            'sentence': [],
+            'EVENT_TYPE' : tmp['TYPE'],
+            'EVENT_SUBTYPE' : tmp['SUBTYPE'],
+            'entity_position' : [],
+        }
+        # Each Entity, value, timex2 overlap check
+        assert self.check_entity_overlap(entities, valtimexes)
+        raw_sent = e_mention['ldc_scope']['text']
+
+        idx_list = [0 for i in range(len(raw_sent))]
+        if not (len(idx_list) == (int(e_mention['ldc_scope']['position'][1])-int(e_mention['ldc_scope']['position'][0])+1)):
+            return 1
+        sent_start_idx = int(e_mention['ldc_scope']['position'][0])
+
+        # Mark Entity position
+        for ent in entities:
+            ent_start_idx = int(ent['head']['position'][0])
+            for i in range(int(ent['head']['position'][1]) - int(ent['head']['position'][0]) + 1):
+                if idx_list[ent_start_idx + i - sent_start_idx]==1: raise ValueError('까율~~~~~~~~~~~~~~~~~~')
+                idx_list[ent_start_idx + i - sent_start_idx] = 1  # entity mark
+
+        dupl_exist = False
+        # Mark Value&Timex2 position
+        for val in valtimexes:
+            ent_start_idx = int(val['position'][0])
+            for i in range(int(val['position'][1]) - int(val['position'][0]) + 1):
+                if idx_list[ent_start_idx + i - sent_start_idx] == 1:  # entity mark
+                    dupl_exist = True
+        if not dupl_exist:
+            for val in valtimexes:
+                ent_start_idx = int(val['position'][0])
+                for i in range(int(val['position'][1]) - int(val['position'][0]) + 1):
+                    idx_list[ent_start_idx + i - sent_start_idx] = 1  # entity mark
+
+        token_list = []
+        entity_mark_list = []
+        curr_token = ''
+        # TODO: save each mark as variable, not to type 'N' or 'E' each time.
+        for idx, el in enumerate(raw_sent):
+            if idx==0:
+                curr_token += el
+                continue
+            if idx_list[idx]!=idx_list[idx-1]:
+                if idx_list[idx-1]==1: entity_mark_list.append('E')
+                else: entity_mark_list.append('*')
+                token_list.append(curr_token)
+                curr_token = el
+                continue
+            curr_token += el
+            if idx == len(e_mention['ldc_scope']['text'])-1:
+                if idx_list[idx]==1: entity_mark_list.append('E')
+                else: entity_mark_list.append('*')
+                token_list.append(curr_token)
+
+
+        assert len(token_list)==len(entity_mark_list)
+        splitted_token_list = []  # TODO: The better name....
+        splitted_entity_mark_list = []
+
+        for tok, mark in zip(token_list, entity_mark_list):
+            if mark == '*':
+                splitted_tok = tok.split()
+                splitted_token_list += splitted_tok
+                splitted_entity_mark_list += ['*' for i in range(len(splitted_tok))]
+            if mark == 'E':
+                splitted_token_list.append(tok)
+                splitted_entity_mark_list.append('E')
+        assert len(splitted_entity_mark_list)==len(splitted_token_list)
+
+        # Arguement Mark
+        argument_role_label = ['*' for i in range(len(splitted_entity_mark_list))]
+        for arg in e_mention['argument']:
+            if 'text_head' in arg:
+                arg_text,arg_role = arg['text_head'],arg['ROLE']
+            else:
+                arg_text,arg_role = arg['text'],arg['ROLE']
+            # TODO: Move this part to up
+            arg_idx = None
+            if arg_text not in splitted_token_list:
+                for idx,el in enumerate(splitted_token_list):
+                    if arg_text in el:
+                        arg_idx = idx
+                        break
+            else:
+                arg_idx = splitted_token_list.index(arg_text)
+            if arg_idx==None:
+                print('Exception')
+                return 1
+            argument_role_label[arg_idx] = arg_role
+
+        assert len(splitted_entity_mark_list)==len(splitted_token_list)
+
+
+        trigger_idx = None
+        trigger_type_label = ['*' for i in range(len(splitted_entity_mark_list))]
+        if e_mention['anchor']['text'] in splitted_token_list:
+            trigger_idx = [splitted_token_list.index(e_mention['anchor']['text'])]
+        else:
+            # pp.pprint(e_mention)
+            # print(splitted_token_list)
+            # print(e_mention['anchor']['text'])
+            # input()
+            for idx,tok in enumerate(token_list):
+                if e_mention['anchor']['text'] in tok:
+                    trigger_idx = [idx]
+        if trigger_idx==None:  # multiple trigger like 'blew him up'
+            triggers = e_mention['anchor']['text'].split()
+            trigger_idx = []
+            for tmp_t in triggers:
+                if tmp_t in token_list: trigger_idx.append(token_list.index(tmp_t))
+                else:
+                    for idx, tok in enumerate(token_list):
+                        if tmp_t in tok:
+                            trigger_idx.append(idx)
+
+        for el in trigger_idx:
+            trigger_type_label[el] = tmp['TYPE']# + '/' + tmp['SUBTYPE']
+
+        assert len(splitted_entity_mark_list)==len(splitted_token_list)==len(trigger_type_label)==len(argument_role_label)
+        packed_data['sentence'] = splitted_token_list
+        packed_data['trigger_position'] = trigger_type_label
+        packed_data['entity_position'] = splitted_entity_mark_list
+        packed_data['argument_position'] = argument_role_label
+        return packed_data
+
+    @staticmethod
+    def check_entity_overlap(entities, valtimexes):
+        ranges = []
+        # TODO: Implement this later
+        for ent in entities:
+            ranges.append(None)
+        return True
+
+    @staticmethod
+    def search_entity_in_sentence(entities, sent_pos):
+        headVSextent = 'head'
+        entities_in_sent = list()
+        check = dict()
+        for entity in entities:
+            for mention in entity['mention']:
+                if sent_pos[0] <= int(mention[headVSextent]['position'][0]) and int(mention[headVSextent]['position'][1]) <= sent_pos[1]:
+                    if mention[headVSextent]['position'][0] in check:  # duplicate entity in one word.
+                        #print('으악!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
+                        #raise ValueError
+                        continue
+                    check[mention[headVSextent]['position'][0]] = 1
+                    entities_in_sent.append(mention)
+        return entities_in_sent
+
+    @staticmethod
+    def search_valtimex_in_sentence(valtimex, sent_pos):
+        valtimex_in_sent = list()
+        for item in valtimex:
+            for mention in item['mention']:
+                if sent_pos[0] <= int(mention['position'][0]) and sent_pos[1] >= int(mention['position'][1]):
+                    valtimex_in_sent.append(mention)
+        return valtimex_in_sent
+
     def format_to_argument(self, subtasktype):
         for item in self.dataset:
             d = item[0]
@@ -87,50 +291,6 @@ class PreprocessManager():
             cand_list.append([marks,label])
         return cand_list
 
-    def format_to_trigger(self, subtasktype):
-        for item in self.dataset:
-            d = item[0]
-            fname = item[1]
-            generated_candi = self.generate_trigger_candidate_pos_list(d['trigger_position'], d['entity_position'], subtasktype)
-            if len(d['sentence'])>hp_f.max_sequence_length:continue
-            for candi in generated_candi:
-                # Whether except the 'None' label at classification
-                # if subtasktype == 'CLASSIFICATION' and candi[1] == 'None': continue
-                self.tri_task_format_data.append([d['sentence']]+candi+[fname]+[d['entity_position']])
-
-    def generate_trigger_candidate_pos_list(self, trigger_pos, entity_pos, subtasktype):
-        cand_list = []
-        idx_list = []
-        for idx,el in enumerate(trigger_pos):
-            if el!='*': idx_list.append((idx,el))
-
-        assert len(entity_pos)==len(trigger_pos)
-
-        for idx in range(len(trigger_pos)):
-            marks = ['A' for i in range(len(trigger_pos))]
-            marks[idx]='B'
-            label = 'None'
-            for i in idx_list:
-                if idx == i[0]:
-                    label = i[1] if subtasktype=='CLASSIFICATION' else 'TRIGGER'  # else: Identification case
-            cand_list.append([marks,label])
-        return cand_list
-
-    def process_sentencewise(self, doc):
-        entities, val_timexs, events, xml_fname = doc
-        datas = []
-        for event in events:
-            for e_mention in event['event_mention']:
-                tmp = {'TYPE': event['TYPE'], 'SUBTYPE': event['SUBTYPE']}
-                tmp['raw_sent'] = e_mention['ldc_scope']['text']
-                sent_pos = [int(i) for i in e_mention['ldc_scope']['position']]
-                entities_in_sent = self.search_entity_in_sentence(entities, sent_pos)
-                val_timexs_in_sent = self.search_valtimex_in_sentence(val_timexs, sent_pos)
-                e_mention = self.get_argument_head(entities_in_sent, e_mention)
-                res = self.packing_sentence(e_mention, tmp, sent_pos, entities_in_sent, val_timexs_in_sent)
-                if res!=1: datas.append([res,xml_fname])
-        return datas
-
     @staticmethod
     def get_argument_head(entities, e_mention):
         for idx, arg in enumerate(e_mention['argument']):
@@ -140,152 +300,6 @@ class PreprocessManager():
                     e_mention['argument'][idx]['position_head'] = entity['head']['position']
                     e_mention['argument'][idx]['text_head'] = entity['head']['text']
         return e_mention
-
-    def packing_sentence(self, e_mention, tmp, sent_pos, entities, valtimexes):
-        packed_data = {
-            'sentence': [],
-            'EVENT_TYPE' : tmp['TYPE'],
-            'EVENT_SUBTYPE' : tmp['SUBTYPE'],
-            'entity_position' : [],
-        }
-        # Each Entity, value, timex2 overlap check
-        assert self.check_entity_overlap(entities, valtimexes)
-        raw_sent = e_mention['ldc_scope']['text']
-
-        idx_list = [0 for i in range(len(e_mention['ldc_scope']['text']))]
-        if not (len(idx_list) == (int(e_mention['ldc_scope']['position'][1])-int(e_mention['ldc_scope']['position'][0])+1)):
-            return 1
-        sent_start_idx = int(e_mention['ldc_scope']['position'][0])
-
-        # Mark Entity position
-        for ent in entities:
-            ent_start_idx = int(ent['head']['position'][0])
-            for i in range(int(ent['head']['position'][1]) - int(ent['head']['position'][0]) + 1):
-                if idx_list[ent_start_idx + i - sent_start_idx]==1: raise ValueError('까율~~~~~~~~~~~~~~~~~~')
-                idx_list[ent_start_idx + i - sent_start_idx] = 1  # entity mark
-
-        # Mark Value&Timex2 position
-        for val in valtimexes:
-            ent_start_idx = int(val['position'][0])
-            for i in range(int(val['position'][1]) - int(val['position'][0]) + 1):
-                idx_list[ent_start_idx + i - sent_start_idx] = 1  # entity mark
-
-        token_list = []
-        entity_mark_list = []
-        curr_token = ''
-        # TODO: save each mark as variable, not to type 'N' or 'E' each time.
-        for idx, el in enumerate(e_mention['ldc_scope']['text']):
-            if idx==0:
-                curr_token += el
-                continue
-            if idx_list[idx]!=idx_list[idx-1]:
-                if idx_list[idx-1]==1: entity_mark_list.append('E')
-                else: entity_mark_list.append('*')
-                token_list.append(curr_token)
-                curr_token = el
-                continue
-            curr_token += el
-            if idx == len(e_mention['ldc_scope']['text'])-1:
-                if idx_list[idx]==1: entity_mark_list.append('E')
-                else: entity_mark_list.append('*')
-                token_list.append(curr_token)
-
-        assert len(token_list)==len(entity_mark_list)
-        good_token_list = []  # TODO: The better name....
-        good_entity_mark_list = []
-
-        for tok, mark in zip(token_list, entity_mark_list):
-            if mark == '*':
-                splitted_tok = tok.split()
-                good_token_list += splitted_tok
-                good_entity_mark_list += ['*' for i in range(len(splitted_tok))]
-            if mark == 'E':
-                good_token_list.append(tok.strip())
-                good_entity_mark_list.append('E')
-        assert len(good_entity_mark_list)==len(good_token_list)
-
-        argument_role_label = ['*' for i in range(len(good_entity_mark_list))]
-        for arg in e_mention['argument']:
-            if 'text_head' in arg:
-                arg_text,arg_role = arg['text_head'],arg['ROLE']
-            else:
-                arg_text,arg_role = arg['text'],arg['ROLE']
-
-            #assert good_token_list.count(arg_text) in [0,1,2]  # 단 한번!
-            # TODO: Move this part to up
-            arg_idx = None
-            if arg_text not in good_token_list:
-                for idx,el in enumerate(good_token_list):
-                    if arg_text in el:
-                        arg_idx = idx
-                        break
-            else:
-                arg_idx = good_token_list.index(arg_text)
-            if arg_idx==None:
-                print('Exception')
-                return 1
-            argument_role_label[arg_idx] = arg_role
-
-        trigger_idx = None
-        trigger_type_label = ['*' for i in range(len(good_entity_mark_list))]
-        if e_mention['anchor']['text'] in good_token_list:
-            trigger_idx = [good_token_list.index(e_mention['anchor']['text'])]
-        else:
-            for idx,tok in enumerate(token_list):
-                if e_mention['anchor']['text'] in tok:
-                    trigger_idx = [idx]
-        if trigger_idx==None:  # multiple trigger like 'blew him up'
-            triggers = e_mention['anchor']['text'].split()
-            trigger_idx = []
-            for tmp_t in triggers:
-                if tmp_t in token_list: trigger_idx.append(token_list.index(tmp_t))
-                else:
-                    for idx, tok in enumerate(token_list):
-                        if tmp_t in tok:
-                            trigger_idx.append(idx)
-
-        for el in trigger_idx:
-            trigger_type_label[el] = tmp['TYPE']# + '/' + tmp['SUBTYPE']
-
-        assert len(good_entity_mark_list)==len(good_token_list)==len(trigger_type_label)==len(argument_role_label)
-        packed_data['sentence'] = good_token_list
-        packed_data['trigger_position'] = trigger_type_label
-        packed_data['entity_position'] = good_entity_mark_list
-        packed_data['argument_position'] = argument_role_label
-        return packed_data
-
-    @staticmethod
-    def check_entity_overlap(entities, valtimexes):
-        ranges = []
-        # TODO: Implement this later
-        for ent in entities:
-            ranges.append(None)
-        return True
-
-    @staticmethod
-    def search_entity_in_sentence(entities, sent_pos):
-        headVSextent = 'head'
-        entities_in_sent = list()
-        check = dict()
-        for entity in entities:
-            for mention in entity['mention']:
-                if sent_pos[0] <= int(mention[headVSextent]['position'][0]) and int(mention[headVSextent]['position'][1]) <= sent_pos[1]:
-                    if mention[headVSextent]['position'][0] in check:  # duplicate entity in one word.
-                        #print('으악!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!')
-                        #raise ValueError
-                        continue
-                    check[mention[headVSextent]['position'][0]] = 1
-                    entities_in_sent.append(mention)
-        return entities_in_sent
-
-    @staticmethod
-    def search_valtimex_in_sentence(valtimex, sent_pos):
-        valtimex_in_sent = list()
-        for item in valtimex:
-            for mention in item['mention']:
-                if sent_pos[0] <= int(mention['position'][0]) and sent_pos[1] >= int(mention['position'][1]):
-                    valtimex_in_sent.append(mention)
-        return valtimex_in_sent
 
     def fname_search(self):
         '''

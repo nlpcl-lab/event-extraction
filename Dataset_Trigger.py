@@ -19,7 +19,7 @@ class Dataset_Trigger:
         self.windows = windows
         self.batch_size = batch_size
         self.max_sequence_length = max_sequence_length
-        self.eval_num = eval_num
+
         self.dtype = dtype
 
         self.all_words = list()
@@ -41,7 +41,7 @@ class Dataset_Trigger:
 
         self.word_embed = self.embed_manager()
 
-        self.eval_instances, self.train_instances = [], []
+        self.valid_instances, self.eval_instances, self.train_instances = [], [], []
         self.divide_train_eval_data()
         # self.over_sampling()
         self.batch_nums = len(self.train_instances) // self.batch_size
@@ -111,24 +111,31 @@ class Dataset_Trigger:
 
     def divide_train_eval_data(self):
         testset_fname = []
-
+        validset_fname = []
         # select test set randomly
-        # random.shuffle(self.instances)
+        random.shuffle(self.instances)
 
         for ins in self.instances:
             if 'nw/adj' not in ins['fname']:
                 self.train_instances.append(ins)
             elif ins['fname'] in testset_fname:
                 self.eval_instances.append(ins)
-            elif len(testset_fname) > 45:
+            elif ins['fname'] in validset_fname:
+                self.eval_instances.append(ins)
+            elif len(testset_fname) >= 40 and len(validset_fname)>= 40:
                 self.train_instances.append(ins)
-            else:
+            elif len(testset_fname)<40:
                 testset_fname.append(ins['fname'])
                 self.eval_instances.append(ins)
+            elif len(validset_fname)<40:
+                validset_fname.append(ins['fname'])
+                self.valid_instances.append(ins)
+            else:
+                raise ValueError
 
-        print('TRAIN: {} TEST: {}'.format(len(self.train_instances), len(self.eval_instances)))
+        print('TRAIN: {} VALID{} TEST: {}'.format(len(self.train_instances), len(self.valid_instances), len(self.eval_instances)))
         random.shuffle(self.train_instances)
-        assert len(self.instances) == (len(self.train_instances) + len(self.eval_instances))
+        assert len(self.instances) == (len(self.train_instances) + len(self.eval_instances) + len(self.valid_instances))
 
     def manage_entity_in_POS(self, poss, entity_mark):
         new_pos = []
