@@ -1,3 +1,4 @@
+from string import ascii_letters, digits
 import os
 import xml.etree.ElementTree as ET
 import pickle
@@ -50,7 +51,7 @@ class PreprocessManager():
             if len(d['sentence'])>hp_f.max_sequence_length:continue
             for candi in generated_candi:
                 # Whether except the 'None' label at classification
-                # if subtasktype == 'CLASSIFICATION' and candi[1] == 'None': continue
+                if subtasktype == 'CLASSIFICATION' and candi[1] == 'None': continue
                 self.tri_task_format_data.append([d['sentence']]+candi+[fname]+[d['entity_position']])
 
     def generate_trigger_candidate_pos_list(self, trigger_pos, entity_pos, subtasktype):
@@ -102,6 +103,13 @@ class PreprocessManager():
             return 1
         sent_start_idx = int(e_mention['ldc_scope']['position'][0])
 
+        trigger_idx_list = [0 for i in range(len(raw_sent))]
+        # pp.pprint(e_mention['anchor'])
+        # input()
+        #
+        # for tri in e_mention['anchor']:
+        #
+
         # Mark Entity position
         for ent in entities:
             ent_start_idx = int(ent['head']['position'][0])
@@ -142,7 +150,6 @@ class PreprocessManager():
                 else: entity_mark_list.append('*')
                 token_list.append(curr_token)
 
-
         assert len(token_list)==len(entity_mark_list)
         splitted_token_list = []  # TODO: The better name....
         splitted_entity_mark_list = []
@@ -180,40 +187,86 @@ class PreprocessManager():
 
         assert len(splitted_entity_mark_list)==len(splitted_token_list)
 
-
+        trigger_by_multi_w = False
         trigger_idx = None
-        trigger_type_label = ['*' for i in range(len(splitted_entity_mark_list))]
         if e_mention['anchor']['text'] in splitted_token_list:
             trigger_idx = [splitted_token_list.index(e_mention['anchor']['text'])]
         else:
-            # pp.pprint(e_mention)
-            # print(splitted_token_list)
-            # print(e_mention['anchor']['text'])
-            # input()
-            for idx,tok in enumerate(token_list):
+            for idx,tok in enumerate(splitted_token_list):
                 if e_mention['anchor']['text'] in tok:
+                    if len(e_mention['anchor']['text'].split())>=2: continue
                     trigger_idx = [idx]
-        if trigger_idx==None:  # multiple trigger like 'blew him up'
+                    splitted_token_list[idx] = e_mention['anchor']['text']
+
+        if trigger_idx == None:  # multiple trigger like 'blew him up'
             triggers = e_mention['anchor']['text'].split()
+            if len(triggers)==1:
+                print('##', triggers)
+                return 1
             trigger_idx = []
-            for tmp_t in triggers:
-                if tmp_t in token_list: trigger_idx.append(token_list.index(tmp_t))
+            first_tword = triggers[0]
+            second_tword = triggers[1]
+            for tok_idx,tok in enumerate(splitted_token_list):
+                if first_tword in tok:
+                    if tok_idx!=len(splitted_token_list)-1 and second_tword in splitted_token_list[tok_idx+1]:
+                        for i in range(len(triggers)):
+                            trigger_idx.append(tok_idx+i)
+                        trigger_by_multi_w = True
+
+        if trigger_idx in [None,[]]:
+            print(123)
+            return 1
+
+        # Trigger by multiple word as one entity
+        if trigger_by_multi_w:
+            new_splited_token_list, new_argument_role_label, new_splited_entity_mark_list = [], [], []
+            first_trigger_idx = trigger_idx[0]
+            for idx,tok in enumerate(splitted_token_list):
+                if idx in trigger_idx:
+                    if idx==first_trigger_idx:
+                        new_splited_token_list.append(tok)
+                        new_argument_role_label.append(argument_role_label[idx])
+                        new_splited_entity_mark_list.append(splitted_entity_mark_list[idx])
+                    else:
+                        new_splited_token_list[-1] += ' '+tok
                 else:
-                    for idx, tok in enumerate(token_list):
-                        if tmp_t in tok:
-                            trigger_idx.append(idx)
+                    new_splited_token_list.append(tok)
+                    new_argument_role_label.append(argument_role_label[idx])
+                    new_splited_entity_mark_list.append(splitted_entity_mark_list[idx])
+
+            assert len(splitted_token_list) == (len(new_splited_token_list) + len(trigger_idx) - 1)
+
+            splitted_token_list = new_splited_token_list
+            argument_role_label = new_argument_role_label
+            splitted_entity_mark_list = new_splited_entity_mark_list
+            trigger_idx = [first_trigger_idx]
+
+        trigger_type_label = ['*' for i in range(len(splitted_entity_mark_list))]
 
         for el in trigger_idx:
             trigger_type_label[el] = tmp['TYPE']# + '/' + tmp['SUBTYPE']
         for idx, tok in enumerate(splitted_token_list): splitted_token_list[idx] = tok.strip()
 
+        for idx, tok in enumerate(splitted_token_list):
+            if len(tok) >= 2 and self.is_tail_symbol_only_check(tok):
+                splitted_token_list[idx] = tok[:-1]
+
         assert len(splitted_entity_mark_list)==len(splitted_token_list)==len(trigger_type_label)==len(argument_role_label)
+
 
         packed_data['sentence'] = splitted_token_list
         packed_data['trigger_position'] = trigger_type_label
         packed_data['entity_position'] = splitted_entity_mark_list
         packed_data['argument_position'] = argument_role_label
+
         return packed_data
+
+    @staticmethod
+    def is_tail_symbol_only_check(str):
+        if str[-1] in ascii_letters+digits: return False
+        for c in str[:-1]:
+            if c not in ascii_letters+digits: return False
+        return True
 
     @staticmethod
     def check_entity_overlap(entities, valtimexes):

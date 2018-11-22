@@ -78,7 +78,12 @@ class Dataset_Trigger:
                 matrix[idx] = word_map[word]
             else:
                 if len(word.split()) == 1:  # OOV case
-                    matrix[idx] = matrix[self.word_id['<unk>']]
+
+                    if word.lower() in word_map.keys():# even 'Did' is OOV!
+                        matrix[idx] = word_map[word.lower()]
+                    else:
+                        print('oov:   {}'.format(word))
+                        matrix[idx] = matrix[self.word_id['<unk>']]
                 else:  # multiple word as one word, maybe Entity case
                     pass  # Do it after iterating all voca once
 
@@ -135,25 +140,38 @@ class Dataset_Trigger:
                 train_ins,valid_ins,test_ins = pickle.load(f)
         else:
             validset_fname, testset_fname = [], []
+            random.shuffle(self.instances)
             # select test set randomly
+            # for ins in self.instances:
+            #     if 'nw/adj' not in ins['fname']:
+            #         train_ins.append(ins)
+            #     elif ins['fname'] in testset_fname:
+            #         test_ins.append(ins)
+            #     elif ins['fname'] in validset_fname:
+            #         valid_ins.append(ins)
+            #     elif len(testset_fname) >= 40 and len(validset_fname)>= 30:
+            #         train_ins.append(ins)
+            #     elif len(validset_fname)<30:
+            #         validset_fname.append(ins['fname'])
+            #         valid_ins.append(ins)
+            #     elif len(testset_fname)<:
+            #         testset_fname.append(ins['fname'])
+            #         test_ins.append(ins)
+            #     else:
+            #         raise ValueError
             for ins in self.instances:
-                if 'nw/adj' not in ins['fname']:
-                    train_ins.append(ins)
-                elif ins['fname'] in testset_fname:
+                if ins['fname'] in testset_fname:
                     test_ins.append(ins)
                 elif ins['fname'] in validset_fname:
                     valid_ins.append(ins)
-                elif len(testset_fname) >= 30 and len(validset_fname)>= 30:
-                    train_ins.append(ins)
-                elif len(validset_fname)<30:
+                elif len(validset_fname)<35:
                     validset_fname.append(ins['fname'])
                     valid_ins.append(ins)
-                elif len(testset_fname)<30:
+                elif len(testset_fname)<35:
                     testset_fname.append(ins['fname'])
                     test_ins.append(ins)
-
                 else:
-                    raise ValueError
+                    train_ins.append(ins)
             with open(tdv_instance_fname, 'wb') as f:
                 pickle.dump([train_ins, valid_ins, test_ins],f)
 
