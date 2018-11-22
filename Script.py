@@ -155,14 +155,14 @@ if __name__ == '__main__':
 
                 if epoch % 5 == 0:
                     if task == 1:
-                        x, c, y, pos_c, pos_tag = dataset.next_eval_data()
+                        x, c, y, pos_c, pos_tag = dataset.next_valid_data()
                         trigger_eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, input_pos_tag=pos_tag,
                                           dropout_keep_prob=1.0)
                         path = saver.save(sess, checkpoint_prefix + "-Trigger-Identification", epoch)
                         print("Saved model checkpoint to {}\n".format(path))
 
                     if task == 2:
-                        x, t, c, y, pos_c, pos_t, _ = dataset.valid_instances_data()
+                        x, t, c, y, pos_c, pos_t, _ = dataset.eval_data()
                         argument_eval_step(input_x=x, input_y=y, input_t=t, input_c=c, input_c_pos=pos_c,
                                            input_t_pos=pos_t,
                                            dropout_keep_prob=1.0)
