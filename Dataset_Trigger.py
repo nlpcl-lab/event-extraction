@@ -42,7 +42,7 @@ class Dataset_Trigger:
         self.word_embed = self.embed_manager()
 
         self.valid_instances, self.eval_instances, self.train_instances = [], [], []
-        self.divide_train_eval_data()
+        self.divide_train_valid_eval_data()
         # self.over_sampling()
         self.batch_nums = len(self.train_instances) // self.batch_size
         self.index = np.arange(len(self.train_instances))
@@ -109,30 +109,38 @@ class Dataset_Trigger:
         self.train_instances = new_train_instances
 
 
-    def divide_train_eval_data(self):
-        testset_fname = []
-        validset_fname = []
-        # select test set randomly
-        random.shuffle(self.instances)
+    def divide_train_valid_eval_data(self):
+        tdv_instance_fname = './data/trigger_TDV_divide_{}_maxlen_{}_instance.bin'.format(self.dtype, HyperParams_Tri_classification.max_sequence_length)
+        train_ins, valid_ins, test_ins = [], [], []
 
-        for ins in self.instances:
-            if 'nw/adj' not in ins['fname']:
-                self.train_instances.append(ins)
-            elif ins['fname'] in testset_fname:
-                self.eval_instances.append(ins)
-            elif ins['fname'] in validset_fname:
-                self.eval_instances.append(ins)
-            elif len(testset_fname) >= 40 and len(validset_fname)>= 40:
-                self.train_instances.append(ins)
-            elif len(testset_fname)<40:
-                testset_fname.append(ins['fname'])
-                self.eval_instances.append(ins)
-            elif len(validset_fname)<40:
-                validset_fname.append(ins['fname'])
-                self.valid_instances.append(ins)
-            else:
-                raise ValueError
+        if os.path.exist(tdv_instance_fname):
+            with open(tdv_instance_fname,'rb') as f:
+                train_ins,valid_ins,test_ins = pickle.load(f)
+        else:
+            validset_fname, testset_fname = [], []
+            # select test set randomly
+            random.shuffle(self.instances)
+            for ins in self.instances:
+                if 'nw/adj' not in ins['fname']:
+                    train_ins.append(ins)
+                elif ins['fname'] in testset_fname:
+                    test_ins.append(ins)
+                elif ins['fname'] in validset_fname:
+                    valid_ins.append(ins)
+                elif len(testset_fname) >= 40 and len(validset_fname)>= 40:
+                    train_ins.append(ins)
+                elif len(testset_fname)<40:
+                    testset_fname.append(ins['fname'])
+                    test_ins.append(ins)
+                elif len(validset_fname)<40:
+                    validset_fname.append(ins['fname'])
+                    valid_ins.append(ins)
+                else:
+                    raise ValueError
+            with open(tdv_instance_fname, 'wb') as f:
+                pickle.dump(f, [train_ins, valid_ins, test_ins])
 
+        self.train_instances, self.valid_instances, self.eval_instances = train_ins, valid_ins, test_ins
         print('TRAIN: {} VALID{} TEST: {}'.format(len(self.train_instances), len(self.valid_instances), len(self.eval_instances)))
         random.shuffle(self.train_instances)
         assert len(self.instances) == (len(self.train_instances) + len(self.eval_instances) + len(self.valid_instances))
