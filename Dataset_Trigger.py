@@ -322,6 +322,36 @@ class Dataset_Trigger:
         assert len(y) == len(x) == len(c) == len(pos_c) == len(pos_tag)
         return x, c, one_hot(y, self.label_id, len(self.all_labels)), pos_c, pos_tag
 
+    def next_valid_data(self):
+        batch_instances = self.valid_instances
+        pos_tag, y, x, c, pos_c = [list() for _ in range(5)]
+
+        for instance in batch_instances:
+            words = instance['words']
+            pos_taggings = instance['pos_taggings']
+            marks = instance['marks']
+            label = instance['label']
+
+            index_candidates = find_candidates(marks, ['B'])
+            assert (len(index_candidates)) == 1
+
+            y.append(label)
+            marks = marks + ['A'] * (self.max_sequence_length - len(marks))
+            words = words + ['<eos>'] * (self.max_sequence_length - len(words))
+            pos_taggings = pos_taggings + ['*'] * (self.max_sequence_length - len(pos_taggings))
+            pos_taggings = list(map(lambda x: self.pos_taggings_id[x], pos_taggings))
+            pos_tag.append(pos_taggings)
+            index_words = list(map(lambda x: self.word_id[x], words))
+            x.append(index_words)
+            pos_candidate = [i for i in range(-index_candidates[0], 0)] + [i for i in range(0,
+                                                                                            self.max_sequence_length -
+                                                                                            index_candidates[0])]
+            pos_c.append(pos_candidate)
+            c.append([index_words[index_candidates[0]]] * self.max_sequence_length)
+            assert len(words) == len(marks) == len(pos_taggings) == len(index_words) == len(pos_candidate)
+        assert len(y) == len(x) == len(c) == len(pos_c) == len(pos_tag)
+        return x, c, one_hot(y, self.label_id, len(self.all_labels)), pos_c, pos_tag
+
 
 if __name__ == '__main__':
     D = Dataset_Trigger()
