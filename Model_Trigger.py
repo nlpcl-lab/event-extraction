@@ -68,7 +68,7 @@ class Model():
             # TODO: Word2Vec lookup table
             if embed_matrx is None:  # use randomly initialized matrix as word embedding
                 W_text = tf.Variable(tf.random_normal(shape=[vocab_size, word_embedding_size], mean=0.0, stddev=0.5), name="word_table")
-            else:  # pre-trained word embedding matrx
+            else:  # pre-trained word embedding matrix
                 W_text = tf.Variable(embed_matrx, trainable=False, dtype=tf.float32, name='word_embedding')
             input_word_vec = tf.nn.embedding_lookup(W_text, input_x)
 

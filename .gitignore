@@ -12,5 +12,5 @@ logdir_dev/
 house/
 mnli/
 runs/
-
+*.html
 *.bin

@@ -144,12 +144,12 @@ class Dataset_Trigger:
                     test_ins.append(ins)
                 elif ins['fname'] in validset_fname:
                     valid_ins.append(ins)
-                elif len(testset_fname) >= 40 and len(validset_fname)>= 40:
+                elif len(testset_fname) >= 35 and len(validset_fname)>= 35:
                     train_ins.append(ins)
-                elif len(testset_fname)<40:
+                elif len(testset_fname)<35:
                     testset_fname.append(ins['fname'])
                     test_ins.append(ins)
-                elif len(validset_fname)<40:
+                elif len(validset_fname)<35:
                     validset_fname.append(ins['fname'])
                     valid_ins.append(ins)
                 else:

@@ -154,7 +154,7 @@ if __name__ == '__main__':
                                             dropout_keep_prob=0.5)
 
                 if epoch % 5 == 0:
-                    if task == 1:
+                    if task == 1:  # Trigger
                         x, c, y, pos_c, pos_tag = dataset.next_valid_data()
                         trigger_eval_step(input_x=x, input_y=y, input_c=c, input_c_pos=pos_c, input_pos_tag=pos_tag,
                                           dropout_keep_prob=1.0)
