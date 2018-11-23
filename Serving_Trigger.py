@@ -10,8 +10,6 @@ app = Flask(__name__)
 
 def get_batch(sentence, word_id, max_sequence_length):
     tokens = [word for word in nltk.word_tokenize(sentence)]
-
-
     words = []
     for i in range(max_sequence_length):
         if i < len(tokens):
@@ -41,7 +39,7 @@ def get_batch(sentence, word_id, max_sequence_length):
 dataset = TRIGGER_DATASET(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length,
                           windows=hp.windows, dtype='IDENTIFICATION')
 
-checkpoint_dir = './runs/1542970421/checkpoints'
+checkpoint_dir = './runs/1542973204/checkpoints'
 checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir)
 
 graph = tf.Graph()

@@ -15,5 +15,5 @@ runs/
 *.html
 *.bin
 
-
 pid.txt
+log.txt
