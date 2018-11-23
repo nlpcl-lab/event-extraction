@@ -8,9 +8,9 @@ from flask import Flask, session, g, request, render_template, redirect, Respons
 
 app = Flask(__name__)
 
-
 def get_batch(sentence, word_id, max_sequence_length):
     tokens = [word for word in nltk.word_tokenize(sentence)]
+
 
     words = []
     for i in range(max_sequence_length):
@@ -35,7 +35,7 @@ def get_batch(sentence, word_id, max_sequence_length):
         x_batch.append(word_ids)
         x_pos_batch.append([j - i for j in range(size)])
 
-    return x_batch, x_pos_batch
+    return x_batch, x_pos_batch, tokens
 
 
 dataset = TRIGGER_DATASET(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length,
@@ -50,14 +50,15 @@ with graph.as_default():
     with sess.as_default():
         # Load the saved meta graph and restore variables
         saver = tf.train.import_meta_graph("{}.meta".format(checkpoint_file))
+        print('restore model from {}.meta'.format(checkpoint_file))
         saver.restore(sess, checkpoint_file)
 
-        @app.route('/api/event-extraction', methods=['POST'])
+        @app.route('/api/event-extraction/trigger/identification', methods=['POST'])
         def serving():
             data = request.get_json()
             sentence = data['sentence']
 
-            x_batch, x_pos_batch = get_batch(sentence=sentence, word_id=dataset.word_id, max_sequence_length=hp.max_sequence_length)
+            x_batch, x_pos_batch, tokens = get_batch(sentence=sentence, word_id=dataset.word_id, max_sequence_length=hp.max_sequence_length)
 
             print('x_batch :', x_batch)
             print('x_pos_batch :', x_pos_batch)
@@ -81,6 +82,7 @@ with graph.as_default():
             result = ''
             for i in range(len(preds)):
                 word = dataset.id2word[x_batch[0][i]]
+                if word == '<unk>': word = tokens[i]
                 if word == '<eos>': break
                 result += '{}/{} '.format(word, preds[i])
 
