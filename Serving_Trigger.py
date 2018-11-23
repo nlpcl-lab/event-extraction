@@ -35,12 +35,10 @@ def get_batch(sentence, word_id, max_sequence_length):
 dataset = TRIGGER_DATASET(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length,
                           windows=hp.windows, dtype='IDENTIFICATION')
 
-checkpoint_dir = './runs/1542831140/checkpoints'
+checkpoint_dir = './runs/1542948092/checkpoints'
 checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir)
 
 graph = tf.Graph()
-sess = tf.Session()
-
 with graph.as_default():
     sess = tf.Session()
     with sess.as_default():
