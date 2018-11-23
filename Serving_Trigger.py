@@ -82,7 +82,7 @@ with graph.as_default():
             for i in range(len(preds)):
                 word = dataset.id2word[x_batch[0][i]]
                 if word == '<eos>': break
-                print('{}: {}'.format(word, preds[i]))
+                result += '{}/{} '.format(word, preds[i])
 
             return Response(json.dumps({'result': result}), status=200, mimetype='application/json')
 
