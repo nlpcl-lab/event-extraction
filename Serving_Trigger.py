@@ -41,7 +41,7 @@ def get_batch(sentence, word_id, max_sequence_length):
 dataset = TRIGGER_DATASET(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length,
                           windows=hp.windows, dtype='IDENTIFICATION')
 
-checkpoint_dir = './runs/1542951957/checkpoints'
+checkpoint_dir = './runs/1542956274/checkpoints'
 checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir)
 
 graph = tf.Graph()
@@ -88,8 +88,7 @@ with graph.as_default():
 
             return Response(json.dumps({'result': result}), status=200, mimetype='application/json')
 
-
-        base_dir = os.path.abspath(os.path.dirname(__file__) + '/')
-        sys.path.append(base_dir)
-        FLASK_DEBUG = os.getenv('FLASK_DEBUG', True)
-        app.run(host='0.0.0.0', debug=FLASK_DEBUG, port=8085)
+base_dir = os.path.abspath(os.path.dirname(__file__) + '/')
+sys.path.append(base_dir)
+FLASK_DEBUG = os.getenv('FLASK_DEBUG', True)
+app.run(host='0.0.0.0', debug=FLASK_DEBUG, port=8085)
