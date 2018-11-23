@@ -6,7 +6,6 @@ from Util import train_parser
 from Dataset import Dataset as ARGUMENT_DATASET
 from Dataset_Trigger import Dataset_Trigger as TRIGGER_DATASET
 from Config import HyperParams_Tri_classification as hp_trigger, HyperParams as hp_argument
-
 import Visualize
 
 if __name__ == '__main__':

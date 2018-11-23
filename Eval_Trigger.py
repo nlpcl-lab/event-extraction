@@ -1,9 +1,11 @@
-import datetime, os, time
-import numpy as np
+import datetime, os, time, sys
 import tensorflow as tf
 from Dataset_Trigger import Dataset_Trigger as TRIGGER_DATASET
 from Config import HyperParams_Tri_classification as hp
 import nltk
+
+from flask import Flask, session, g, request, render_template, redirect, Response
+app = Flask(__name__)
 
 def get_batch(sentence, word_id, max_sequence_length):
     words = [word for word in nltk.word_tokenize(sentence)]
@@ -28,6 +30,11 @@ def get_batch(sentence, word_id, max_sequence_length):
     return x_batch, x_pos_batch
 
 if __name__ == '__main__':
+    base_dir = os.path.abspath(os.path.dirname(__file__) + '/')
+    sys.path.append(base_dir)
+    FLASK_DEBUG = os.getenv('FLASK_DEBUG', True)
+    app.run(host='0.0.0.0', debug=FLASK_DEBUG, port=8085)
+
     dataset = TRIGGER_DATASET(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length,
                               windows=hp.windows, dtype='IDENTIFICATION')
 
