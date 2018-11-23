@@ -4,14 +4,20 @@ from Dataset_Trigger import Dataset_Trigger as TRIGGER_DATASET
 from Config import HyperParams_Tri_classification as hp
 import nltk
 
-from flask import Flask, session, g, request, render_template, redirect, Response
+from flask import Flask, session, g, request, render_template, redirect, Response, jsonify
 
 app = Flask(__name__)
 
 
 def get_batch(sentence, word_id, max_sequence_length):
-    words = [word for word in nltk.word_tokenize(sentence)]
-    words = words + ['<eos>'] * (max_sequence_length - len(words))
+    tokens = [word for word in nltk.word_tokenize(sentence)]
+
+    words = []
+    for i in range(max_sequence_length):
+        if i < len(tokens):
+            words.append(tokens[i])
+        else:
+            words.append('<eos>')
 
     word_ids = []
     for word in words:
@@ -35,7 +41,7 @@ def get_batch(sentence, word_id, max_sequence_length):
 dataset = TRIGGER_DATASET(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length,
                           windows=hp.windows, dtype='IDENTIFICATION')
 
-checkpoint_dir = './runs/1542948092/checkpoints'
+checkpoint_dir = './runs/1542951957/checkpoints'
 checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir)
 
 graph = tf.Graph()
@@ -47,7 +53,7 @@ with graph.as_default():
         saver.restore(sess, checkpoint_file)
 
         @app.route('/api/event-extraction', methods=['POST'])
-        def download_log():
+        def serving():
             data = request.get_json()
             sentence = data['sentence']
 
@@ -74,10 +80,11 @@ with graph.as_default():
             print('result!')
             result = ''
             for i in range(len(preds)):
-                result += '{}/{} '.format(dataset.id2word[x_batch[0][i]], preds[i])
-                print('{}: {}'.format(dataset.id2word[x_batch[0][i]], preds[i]))
+                word = dataset.id2word[x_batch[0][i]]
+                if word == '<eos>': break
+                print('{}: {}'.format(word, preds[i]))
 
-            return Response(json.dumps({'result': result}), status=200)
+            return Response(json.dumps({'result': result}), status=200, mimetype='application/json')
 
 
         base_dir = os.path.abspath(os.path.dirname(__file__) + '/')
