@@ -1,11 +1,13 @@
-import datetime, os, time, sys
+import datetime, os, sys, json
 import tensorflow as tf
 from Dataset_Trigger import Dataset_Trigger as TRIGGER_DATASET
 from Config import HyperParams_Tri_classification as hp
 import nltk
 
 from flask import Flask, session, g, request, render_template, redirect, Response
+
 app = Flask(__name__)
+
 
 def get_batch(sentence, word_id, max_sequence_length):
     words = [word for word in nltk.word_tokenize(sentence)]
@@ -18,7 +20,7 @@ def get_batch(sentence, word_id, max_sequence_length):
         else:
             word_ids.append(word_id['<unk>'])
 
-    print('word_ids :', word_ids)
+    # print('word_ids :', word_ids)
     size = len(word_ids)
 
     x_batch = []
@@ -29,31 +31,32 @@ def get_batch(sentence, word_id, max_sequence_length):
 
     return x_batch, x_pos_batch
 
-if __name__ == '__main__':
-    base_dir = os.path.abspath(os.path.dirname(__file__) + '/')
-    sys.path.append(base_dir)
-    FLASK_DEBUG = os.getenv('FLASK_DEBUG', True)
-    app.run(host='0.0.0.0', debug=FLASK_DEBUG, port=8085)
 
-    dataset = TRIGGER_DATASET(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length,
-                              windows=hp.windows, dtype='IDENTIFICATION')
+dataset = TRIGGER_DATASET(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length,
+                          windows=hp.windows, dtype='IDENTIFICATION')
 
-    x_batch, x_pos_batch = get_batch(sentence = 'It could swell to as much as $500 billion if we go to war in Iraq',
-                                     word_id = dataset.word_id, max_sequence_length=hp.max_sequence_length)
+checkpoint_dir = './runs/1542831140/checkpoints'
+checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir)
 
-    print('x_batch :', x_batch)
-    print('x_pos_batch :', x_pos_batch)
+graph = tf.Graph()
+sess = tf.Session()
 
-    checkpoint_dir = './runs/1542831140/checkpoints'
-    checkpoint_file = tf.train.latest_checkpoint(checkpoint_dir)
+with graph.as_default():
+    sess = tf.Session()
+    with sess.as_default():
+        # Load the saved meta graph and restore variables
+        saver = tf.train.import_meta_graph("{}.meta".format(checkpoint_file))
+        saver.restore(sess, checkpoint_file)
 
-    graph = tf.Graph()
-    with graph.as_default():
-        sess = tf.Session()
-        with sess.as_default():
-            # Load the saved meta graph and restore variables
-            saver = tf.train.import_meta_graph("{}.meta".format(checkpoint_file))
-            saver.restore(sess, checkpoint_file)
+        @app.route('/api/event-extraction', methods=['POST'])
+        def download_log():
+            data = request.get_json()
+            sentence = data['sentence']
+
+            x_batch, x_pos_batch = get_batch(sentence=sentence, word_id=dataset.word_id, max_sequence_length=hp.max_sequence_length)
+
+            print('x_batch :', x_batch)
+            print('x_pos_batch :', x_pos_batch)
 
             # Get the placeholders from the graph by name
             input_x = graph.get_operation_by_name("input_x").outputs[0]
@@ -71,5 +74,15 @@ if __name__ == '__main__':
 
             preds = sess.run(predictions, feed_dict)
             print('result!')
+            result = ''
             for i in range(len(preds)):
+                result += '{}/{} '.format(dataset.id2word[x_batch[0][i]], preds[i])
                 print('{}: {}'.format(dataset.id2word[x_batch[0][i]], preds[i]))
+
+            return Response(json.dumps({'result': result}), status=200)
+
+
+        base_dir = os.path.abspath(os.path.dirname(__file__) + '/')
+        sys.path.append(base_dir)
+        FLASK_DEBUG = os.getenv('FLASK_DEBUG', True)
+        app.run(host='0.0.0.0', debug=FLASK_DEBUG, port=8085)
