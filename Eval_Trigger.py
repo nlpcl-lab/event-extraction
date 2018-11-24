@@ -6,8 +6,15 @@ from Config import HyperParams_Tri_classification as hp
 import nltk
 
 def get_batch(sentence, word_id, max_sequence_length):
-    words = [word for word in nltk.word_tokenize(sentence)]
-    words = words + ['<eos>'] * (max_sequence_length - len(words))
+    tokens = [word for word in nltk.word_tokenize(sentence)]
+
+
+    words = []
+    for i in range(max_sequence_length):
+        if i < len(tokens):
+            words.append(tokens[i])
+        else:
+            words.append('<eos>')
 
     word_ids = []
     for word in words:
@@ -16,7 +23,7 @@ def get_batch(sentence, word_id, max_sequence_length):
         else:
             word_ids.append(word_id['<unk>'])
 
-    print('word_ids :', word_ids)
+    # print('word_ids :', word_ids)
     size = len(word_ids)
 
     x_batch = []
@@ -25,13 +32,13 @@ def get_batch(sentence, word_id, max_sequence_length):
         x_batch.append(word_ids)
         x_pos_batch.append([j - i for j in range(size)])
 
-    return x_batch, x_pos_batch
+    return x_batch, x_pos_batch, tokens
 
 if __name__ == '__main__':
     dataset = TRIGGER_DATASET(batch_size=hp.batch_size, max_sequence_length=hp.max_sequence_length,
                               windows=hp.windows, dtype='IDENTIFICATION')
 
-    x_batch, x_pos_batch = get_batch(sentence = 'It could swell to as much as $500 billion if we go to war in Iraq',
+    x_batch, x_pos_batch, token = get_batch(sentence = 'It could swell to as much as $500 billion if we go to war in Iraq',
                                      word_id = dataset.word_id, max_sequence_length=hp.max_sequence_length)
 
     print('x_batch :', x_batch)

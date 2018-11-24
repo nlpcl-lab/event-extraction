@@ -6,7 +6,6 @@ from Util import train_parser
 from Dataset import Dataset as ARGUMENT_DATASET
 from Dataset_Trigger import Dataset_Trigger as TRIGGER_DATASET
 from Config import HyperParams_Tri_classification as hp_trigger, HyperParams as hp_argument
-
 import Visualize
 
 if __name__ == '__main__':
@@ -49,7 +48,6 @@ if __name__ == '__main__':
             grads_and_vars = optimizer.compute_gradients(model.loss)
             train_op = optimizer.apply_gradients(grads_and_vars)
 
-            # TODO: after train, do save
             timestamp = str(int(time.time()))
             out_dir = os.path.abspath(os.path.join(os.path.curdir, "runs", timestamp))
             print("Writing to {}\n".format(out_dir))
