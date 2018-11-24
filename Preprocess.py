@@ -94,6 +94,7 @@ class PreprocessManager():
             'EVENT_SUBTYPE' : tmp['SUBTYPE'],
             'entity_position' : [],
         }
+
         # Each Entity, value, timex2 overlap check
         assert self.check_entity_overlap(entities, valtimexes)
         raw_sent = e_mention['ldc_scope']['text']
