@@ -1,7 +1,7 @@
 import datetime, os, time
 import numpy as np
 import tensorflow as tf
-from sklearn.metrics import classification_report, precision_score, recall_score, accuracy_score
+from sklearn.metrics import classification_report, precision_score, recall_score, f1_score, accuracy_score, precision_recall_fscore_support as prf_score
 from Util import train_parser
 from Dataset import Dataset as ARGUMENT_DATASET
 from Dataset_Trigger import Dataset_Trigger as TRIGGER_DATASET
@@ -81,15 +81,25 @@ if __name__ == '__main__':
                     model.dropout_keep_prob: dropout_keep_prob,
                 }
                 accuracy, predicts = sess.run([model.accuracy, model.predicts], feed_dict)
-                print("eval accuracy:{}".format(accuracy))
+                #print("eval accuracy:{}".format(accuracy))
 
-                print(classification_report([np.argmax(item) for item in input_y], predicts, target_names=dataset.all_labels))
-                average_policy = 'macro'
-                pre, rec, acc = precision_score([np.argmax(item) for item in input_y], predicts,
-                                                average=average_policy), recall_score([np.argmax(item) for item in input_y],
-                                                                                      predicts, average=average_policy), \
-                                accuracy_score([np.argmax(item) for item in input_y], predicts)
-                print("[{}]\nPrecision: {}\nRecall: {}\nAccuracy  :  {}\n".format(average_policy, pre, rec, acc))
+
+                y_true = [np.argmax(item) for item in input_y]
+                y_pred = predicts
+                target_names = dataset.all_labels
+
+                print(classification_report(y_true, y_pred,
+                                            target_names=dataset.all_labels))
+
+                metrics = ['macro','weighted','micro']
+                for metric in metrics:
+                    print("\n##  {}  ##".format(metric))
+                    res = prf_score(y_true, y_pred,average=metric)
+
+                    prf = [round(res[0]*100,2),round(res[1]*100,2),round(res[2]*100,2)]
+                    print('Precision    Recall      F1')
+                    print('{}      {}      {}'.format(prf[0], prf[1], prf[2]))
+                print('Accuracy: {}%'.format(round(100*accuracy,2)))
 
                 Visualize.draw(
                     epoch=epoch,
