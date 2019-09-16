@@ -2,6 +2,14 @@
 
 Tensorflow Implementation of Deep Learning Approach for  Event Extraction([**ACE 2005**](https://catalog.ldc.upenn.edu/LDC2006T06)) via Dynamic Multi-Pooling Convolutional Neural Networks.
 
+# Requirements
+
+* Tensorflow
+* Scikit-learn
+* NLTK
+
+`pip install -r requirements.txt` may help.
+
 ## Usage
 
 ### Train
