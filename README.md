@@ -135,9 +135,3 @@ weighted avg       0.61      0.70      0.64      3742
 
 * **Event Extraction via Dynamic Multi-Pooling Convolutional Neural Networks** (IJCNLP 2015), Chen, Yubo, et al. [[paper]](https://pdfs.semanticscholar.org/ca70/480f908ec60438e91a914c1075b9954e7834.pdf)
 * zhangluoyang's cnn-for-auto-event-extract repository [[github]](https://github.com/zhangluoyang/cnn-for-auto-event-extract)
-
-
-## Contributors
-
-[ChaeHun](http://nlp.kaist.ac.kr/~ddehun), [Seungwon](http://nlp.kaist.ac.kr/~swyoon)
-
